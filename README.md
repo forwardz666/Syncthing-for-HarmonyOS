@@ -1,5 +1,7 @@
 # Syncthing HarmonyOS Next
 
+> **<span lang="en">[English](README_EN.md)</span> | 简体中文**
+
 **Syncthing HarmonyOS Next** 是一个面向 **HarmonyOS Next**（API 20，`6.0.0(20)`）平台的 Syncthing 客户端。它在应用进程内嵌原版 Go 语言 Syncthing 核心，并把 Android 版 Syncthing 的工作流（配对、状态、设备/文件夹管理、Web GUI、日志、最近更改、后台连续同步）移植到鸿蒙平板、PC/2in1 与手机。
 
 > **一句话简介**：一个内嵌原版 Go Syncthing 核心的端到端加密文件同步客户端，支持 App 沙箱与下载/文档公共目录同步、后台连续同步与实时传输。
@@ -42,7 +44,7 @@
 ### 1. 先行者项目（迁移基线）
 
 - **[github.com/xinjinshao/SyncthingHarmonyOSNext](https://github.com/xinjinshao/SyncthingHarmonyOSNext)** —— 本项目**最重要的参考来源**。
-  本仓库以其 **c-archive + NAPI 桥接架构** 为迁移基线：把 Go Syncthing 核心编译为静态库（`libsyncthingnative.a`），通过 Harmony NAPI 在同一应用进程内启动、监听 `127.0.0.1:8384`，并提供完整 ArkTS UI、API 20 友好。配对、状态、设备/文件夹管理等 UI 工作流均在此架构之上搭建。原始克隆以只读方式保留在 `work/SyncthingHarmonyOSNext`。
+  本仓库以其 **c-archive + NAPI 桥接架构** 为迁移基线：把 Go Syncthing 核心编译为静态库（`libsyncthingnative.a`），通过 Harmony NAPI 在同一应用进程内启动、监听 `127.0.0.1:8384`，并提供完整 ArkTS UI、API 20 友好。配对、状态、设备/文件夹管理等 UI 工作流均在此架构之上搭建。
 
 ### 2. Syncthing 上游项目
 
@@ -51,15 +53,14 @@
 
 ### 3. GitCode 适配 Wiki 与工具链
 
-- **[lycodestore1/thirdpartydocs Wiki](https://gitcode.com/lycodestore1/thirdpartydocs)** —— 本地克隆于 `docs/thirdpartydocs.wiki/`。其中的 **《syncthing适配鸿蒙PC指南》** 对理解鸿蒙上 Syncthing 的权限坑（公共目录 `operation not permitted`、`READ_WRITE_DOWNLOAD_DIRECTORY` / `READ_WRITE_DOCUMENTS_DIRECTORY` 用户授权、`HOME` 环境变量重定向到下载/文档目录）提供了关键参考；**《go应用适配鸿蒙PC指南》** 说明了鸿蒙上 Go 应用的两种集成方式（hnp 可执行文件 / C 动态库）与权限拦截模型。
+- **[lycodestore1/thirdpartydocs Wiki](https://gitcode.com/lycodestore1/thirdpartydocs)** —— 其中的 **《syncthing适配鸿蒙PC指南》** 对理解鸿蒙上 Syncthing 的权限坑（公共目录 `operation not permitted`、`READ_WRITE_DOWNLOAD_DIRECTORY` / `READ_WRITE_DOCUMENTS_DIRECTORY` 用户授权、`HOME` 环境变量重定向到下载/文档目录）提供了关键参考；**《go应用适配鸿蒙PC指南》** 说明了鸿蒙上 Go 应用的两种集成方式（hnp 可执行文件 / C 动态库）与权限拦截模型。
 - **[openharmony-sig/ohos_golang_go](https://gitcode.com/openharmony-sig/ohos_golang_go)** —— 适配鸿蒙的 Go 编译器工具链（支持 `GOOS=openharmony`，当前版本 1.24.5），用于交叉编译鸿蒙 aarch64 的 Go 核心/桥接产物。
 
 ### 4. 其他参考
 
 - **[HarmonyOS Application Development Guide](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/application-dev-guide)** —— 鸿蒙应用开发官方文档，用于权限、后台任务、扫描等平台能力。
-- **wsl-scidavis-ohos 仓库** —— 提供了文件夹级 FOLDER-picker 授权思路（`DocumentViewPicker` 选文件夹 + `persistPermission` 持久化），是公共目录同步实现的依据之一。
+- **文件夹级授权思路** —— 通过 `DocumentViewPicker` 选择文件夹 + `persistPermission` 持久化授权的方案，是公共目录同步实现的依据之一。
 - **[github.com/xiaobaigroup/ClashBox](https://github.com/xiaobaigroup/ClashBox)**（mihomo 代理客户端）—— 仅作为后台保活策略的分析对象。其模拟位置/画中画/伪下载等规避手段经评估明确不采用，本项目后台保活走官方合规路线。
-- **docs/ 适配日志与对话记录** —— 记录了完整适配决策、踩坑与验收证据，详见 [文档](#文档)。
 
 对上述所有先行者与开源社区贡献者的成果表示敬意与感谢。
 
@@ -152,7 +153,7 @@ ArkTS 负责 UI、生命周期、应用偏好、后台任务、通知、沙箱/�
 使用 **DevEco Studio** 或配置好的鸿蒙命令行环境：
 
 - 需 DevEco Studio、Node.js、Hvigor 及匹配的 HarmonyOS SDK（`targetSdkVersion` / `compatibleSdkVersion` = `6.0.0(20)`）。
-- 构签 HAP 时需先在 DevEco Studio 中配置你自己的 `signingConfigs`（仓库内的 `build-profile.json5` 出于安全考虑未附带任何签名材料）。
+- 构建 HAP 时需先在 DevEco Studio 中配置你自己的 `signingConfigs`（仓库内的 `build-profile.json5` 出于安全考虑未附带任何签名材料）。
 - 构建输出：签名 HAP `entry/build/default/outputs/default/entry-default-signed.hap`；未配置签名时输出 `entry-default-unsigned.hap`。
 - `hdc install` 安装到平板/PC 后启动，首次运行按向导申请下载目录授权。
 
@@ -180,8 +181,6 @@ ArkTS 负责 UI、生命周期、应用偏好、后台任务、通知、沙箱/�
 ## 文档
 
 - `ARCHITECTURE.md`、`MODULE_DESIGN.md`、`CHANGELOG.md`：架构、模块设计与变更记录。
-
-> 说明：完整的鸿蒙适配日志（`docs/` 下各阶段交付与踩坑记录、`docs/dsh-dialog/` 对话记录、`docs/thirdpartydocs.wiki/` GitCode Wiki 本地克隆）、先行者基线只读克隆与各版本签名 HAP 归档，保存在维护者的本地工程目录，出于安全与篇幅原因**未纳入本公开仓库**。
 
 ## 仓库内容
 
