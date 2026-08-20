@@ -1,0 +1,9 @@
+{
+  "name": "entry",
+  "version": "2.0.0",
+  "description": "Syncthing HarmonyOS Next entry module.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {}
+}

@@ -1,0 +1,42 @@
+/node_modules
+/oh_modules
+/local.properties
+/.idea
+**/build
+/.hvigor
+/.local
+.cxx
+/.clangd
+/.clang-format
+/.clang-tidy
+**/.test
+/.appanalyzer
+
+# Local build/cache output
+/.preview
+/coverage
+/tmp
+/logs
+*.log
+*.tmp
+*.bak
+
+# Crash dumps and local diagnostics
+Crash_*.dmp
+*.dmp
+
+# Signing material and machine-local configuration
+*.p12
+*.cer
+*.csr
+*.keystore
+*.pem
+
+# Keep required release native artifacts tracked.
+!entry/src/main/libs/
+!entry/src/main/libs/**
+!entry/src/main/resources/rawfile/
+!entry/src/main/resources/rawfile/syncthing_core
+
+# dsh harness session state (not project code)
+/.mimosa/
