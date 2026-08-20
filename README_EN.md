@@ -1,6 +1,6 @@
-# Syncthing for HarmonyOS Next
+# Syncthing for HarmonyOS
 
-**Syncthing for HarmonyOS Next** is a Syncthing client for **HarmonyOS Next** (API 20, `6.0.0(20)`). It embeds the original Go Syncthing core inside the app process and ports the Android Syncthing workflow — pairing, status, device/folder management, Web GUI, logs, recent changes and continuous background sync — to Harmony tablets, PCs/2-in-1s and phones.
+**Syncthing for HarmonyOS** is a Syncthing client for **HarmonyOS Next** (API 20, `6.0.0(20)`). It embeds the original Go Syncthing core inside the app process and ports the Android Syncthing workflow — pairing, status, device/folder management, Web GUI, logs, recent changes and continuous background sync — to Harmony tablets, PCs/2-in-1s and phones.
 
 > **In one line:** an end-to-end encrypted file-sync client with the original Go Syncthing core embedded, supporting app-sandbox and Download/Documents public-directory sync, background keep-alive sync and real-time transfer.
 

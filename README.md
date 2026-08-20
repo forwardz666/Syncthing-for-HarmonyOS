@@ -1,8 +1,8 @@
-# Syncthing HarmonyOS Next
+# Syncthing for HarmonyOS
 
 > **<span lang="en">[English](README_EN.md)</span> | 简体中文**
 
-**Syncthing HarmonyOS Next** 是一个面向 **HarmonyOS Next**（API 20，`6.0.0(20)`）平台的 Syncthing 客户端。它在应用进程内嵌原版 Go 语言 Syncthing 核心，并把 Android 版 Syncthing 的工作流（配对、状态、设备/文件夹管理、Web GUI、日志、最近更改、后台连续同步）移植到鸿蒙平板、PC/2in1 与手机。
+**Syncthing for HarmonyOS** 是一个面向 **HarmonyOS Next**（API 20，`6.0.0(20)`）平台的 Syncthing 客户端。它在应用进程内嵌原版 Go 语言 Syncthing 核心，并把 Android 版 Syncthing 的工作流（配对、状态、设备/文件夹管理、Web GUI、日志、最近更改、后台连续同步）移植到鸿蒙平板、PC/2in1 与手机。
 
 > **一句话简介**：一个内嵌原版 Go Syncthing 核心的端到端加密文件同步客户端，支持 App 沙箱与下载/文档公共目录同步、后台连续同步与实时传输。
 
