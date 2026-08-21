@@ -1553,6 +1553,22 @@
       "value": "后台同步已停止"
     },
     {
+      "name": "notification_end_text",
+      "value": "Syncthing 已停止后台同步"
+    },
+    {
+      "name": "notification_end_title",
+      "value": "后台同步已结束"
+    },
+    {
+      "name": "notification_start_text",
+      "value": "Syncthing 正在后台同步"
+    },
+    {
+      "name": "notification_start_title",
+      "value": "后台同步已开始"
+    },
+    {
       "name": "notification_idle",
       "value": "后台同步运行中 · 暂无设备连接 · 累计已接收 %s · 已发送 %s"
     },

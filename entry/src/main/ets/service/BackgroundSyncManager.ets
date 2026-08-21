@@ -24,7 +24,13 @@ const BACKGROUND_TASK_SYSCAP = 'SystemCapability.ResourceSchedule.BackgroundTask
  * background task cancellation can be diagnosed from hilog.
  */
 export class BackgroundSyncManager {
-  private readonly bgModes: string[] = ['dataTransfer', 'multiDeviceConnection'];
+  // Use taskKeeping: this device is a PC/2in1, where TASK_KEEPING is available
+  // without ACL and does NOT require mandatory Live View progress notifications.
+  // dataTransfer alone was canceled after 10 minutes (detailedReason=12) when no
+  // Live View was published, and multiDeviceConnection was canceled (reason 10)
+  // when the system detected no distributed multi-device business. taskKeeping
+  // keeps a normal silent long-task notification while Syncthing keeps syncing.
+  private readonly bgModes: string[] = ['taskKeeping'];
   private continuousTaskId: number = -1;
   private continuousNotificationId: number = -1;
   private enabled: boolean = false;
@@ -53,7 +59,7 @@ export class BackgroundSyncManager {
   /**
    * Requests a continuous task and records the returned task/notification IDs.
    */
-  async enable(): Promise<boolean> {
+  async enable(notifyStart: boolean = true): Promise<boolean> {
     this.desired = true;
     if (!this.isContinuousTaskSupported()) {
       this.enabled = false;
@@ -67,10 +73,9 @@ export class BackgroundSyncManager {
       this.startProgressUpdater();
       await this.logSystemTaskSnapshot('enable-already-enabled');
       WorkSchedulerManager.register();
-      await this.publishPersistentNotification(
-        L10n.t('app.string.notification_title'),
-        L10n.t('app.string.notification_active', '0 B', '0 B', 0)
-      );
+      // Deliberately do not publish a progress notification here: on this device a
+      // third-party Live View publish is converted to a ringing service-information
+      // notification. The system-created long-task notification is already shown.
       return true;
     }
 
@@ -94,10 +99,12 @@ export class BackgroundSyncManager {
       this.startHeartbeat();
       this.startProgressUpdater();
       WorkSchedulerManager.register();
-      await this.publishPersistentNotification(
-        L10n.t('app.string.notification_title'),
-        L10n.t('app.string.notification_active', '0 B', '0 B', 0)
-      );
+      // Deliberately do not publish a progress notification here: on this device a
+      // third-party Live View publish is converted to a ringing service-information
+      // notification. The system-created long-task notification is already shown.
+      if (notifyStart) {
+        await this.notifySyncStarted();
+      }
       return true;
     } catch (err) {
       this.enabled = false;
@@ -137,6 +144,7 @@ export class BackgroundSyncManager {
       this.lastError = '';
       Logger.i(TAG, 'Background sync disabled');
       BackgroundDiagnostics.record('background.disable.success');
+      await this.notifySyncStopped();
       return true;
     } catch (err) {
       this.lastError = JSON.stringify(err);
@@ -158,7 +166,9 @@ export class BackgroundSyncManager {
 
     const snapshot = await this.logSystemTaskSnapshot(`ensure-${source}`);
     if (this.enabled && this.continuousTaskId > 0 && snapshot.indexOf(`continuousTaskId=${this.continuousTaskId}`) >= 0) {
-      await this.refreshSystemContinuousTask(source);
+      // Heartbeat does not need to call updateBackgroundRunning: the 10s progress
+      // updater already refreshes the continuous task via updateBackgroundRunning.
+      // This avoids any extra notification churn while the task is still present.
       return true;
     }
 
@@ -320,18 +330,89 @@ export class BackgroundSyncManager {
       } else {
         text = L10n.fmt('app.string.notification_active', Utils.formatBytes(inBytes), Utils.formatBytes(outBytes), connectedCount);
       }
-      await this.publishPersistentNotification(title, text);
+      const progress = await this.computeSyncProgress();
+      // Do NOT publish a Live View progress notification: on this device a third-party
+      // Live View publish is converted to a ringing service-information notification.
+      // updateBackgroundRunning keeps the continuous task fresh; progress is logged
+      // for diagnostics and to prove real data-transfer activity.
       await this.refreshSystemContinuousTask('progress');
-      BackgroundDiagnostics.record('background.progress.success', `in=${inBytes},out=${outBytes},connected=${connectedCount},paused=${paused}`);
+      BackgroundDiagnostics.record('background.progress.success', `in=${inBytes},out=${outBytes},connected=${connectedCount},paused=${paused},progress=${progress}`);
     } finally {
       this.progressInProgress = false;
     }
   }
 
-  private async publishPersistentNotification(title: string, text: string): Promise<void> {
+  private async computeSyncProgress(): Promise<number> {
+    try {
+      const restApi = ServiceLocator.get<RestApi>(SERVICE_NAMES.REST_API);
+      if (restApi === undefined) {
+        return 100;
+      }
+      const folders = await restApi.getFolders();
+      if (!folders.success || folders.data === undefined || folders.data.length === 0) {
+        return 100;
+      }
+      let globalBytes = 0;
+      let needBytes = 0;
+      for (let i = 0; i < folders.data.length; i++) {
+        const folder = folders.data[i];
+        if (folder.paused === true) {
+          continue;
+        }
+        const status = await restApi.getFolderStatus(folder.id);
+        if (status.success && status.data !== undefined) {
+          globalBytes += status.data.globalBytes;
+          needBytes += status.data.needBytes;
+        }
+      }
+      if (globalBytes <= 0) {
+        return 100;
+      }
+      const completed = globalBytes - needBytes;
+      const progress = Math.round(completed / globalBytes * 100);
+      return Math.max(0, Math.min(100, progress));
+    } catch (err) {
+      BackgroundDiagnostics.record('background.progress.computeFailed', JSON.stringify(err));
+      return 100;
+    }
+  }
+
+  private async notifySyncStarted(): Promise<void> {
+    if (this.context === null) {
+      return;
+    }
+    await NotificationManager.getInstance().showInfoNotification(
+      L10n.t('app.string.notification_start_title'),
+      L10n.t('app.string.notification_start_text'),
+      this.context
+    );
+  }
+
+  private async notifySyncStopped(): Promise<void> {
+    if (this.context === null) {
+      return;
+    }
+    await NotificationManager.getInstance().showInfoNotification(
+      L10n.t('app.string.notification_end_title'),
+      L10n.t('app.string.notification_end_text'),
+      this.context
+    );
+  }
+
+  private async publishPersistentNotification(title: string, text: string, progressValue?: number): Promise<void> {
     const manager = NotificationManager.getInstance();
     if (this.continuousNotificationId < 0) {
       BackgroundDiagnostics.record('background.notification.publish.skip', 'notificationId<0');
+      return;
+    }
+    if (this.bgModes.indexOf('dataTransfer') >= 0) {
+      await manager.showDataTransferProgressNotification(
+        title,
+        text,
+        this.continuousNotificationId,
+        progressValue === undefined ? 0 : progressValue,
+        text
+      );
       return;
     }
     if (!manager.isPersistentNotificationShowing()) {
@@ -377,7 +458,7 @@ export class BackgroundSyncManager {
     this.reenableInProgress = true;
     try {
       BackgroundDiagnostics.record('background.reenable.request', `source=${source}`);
-      const result = await this.enable();
+      const result = await this.enable(false);
       BackgroundDiagnostics.record('background.reenable.result', `source=${source}, result=${result}`);
       return result;
     } finally {
@@ -443,15 +524,17 @@ export class BackgroundSyncManager {
         return;
       }
       backgroundTaskManager.on('continuousTaskCancel', (info) => {
-        const detailed = info.detailedReason === undefined ? '' : String(info.detailedReason);
-        BackgroundDiagnostics.record('background.callback.cancel', `id=${info.id}, reason=${info.reason}, detailedReason=${detailed}`);
+        const cancelInfo = JSON.parse(JSON.stringify(info)) as Record<string, Object>;
+        const detailedRaw = cancelInfo['detailedReason'];
+        const detailedReason = typeof detailedRaw === 'number' ? detailedRaw : -1;
+        BackgroundDiagnostics.record('background.callback.cancel',
+          `id=${info.id}, reason=${info.reason}, detailedReason=${detailedReason >= 0 ? String(detailedReason) : ''}`);
         if (info.id !== this.continuousTaskId && this.continuousTaskId > 0) {
           BackgroundDiagnostics.record('background.callback.cancel.ignore', `id=${info.id}, current=${this.continuousTaskId}`);
           return;
         }
-        const userRemoved = info.reason === backgroundTaskManager.ContinuousTaskCancelReason.USER_CANCEL ||
-          info.reason === backgroundTaskManager.ContinuousTaskCancelReason.USER_CANCEL_REMOVE_NOTIFICATION ||
-          info.detailedReason === 3; // ContinuousTaskDetailedCancelReason.USER_CANCEL_REMOVE_NOTIFICATION
+        const userRemoved = this.isUserRemovedCancel(info.reason, detailedReason);
+        BackgroundDiagnostics.record('background.callback.cancel.decision', `id=${info.id}, reason=${info.reason}, detailedReason=${detailedReason >= 0 ? String(detailedReason) : ''}, userRemoved=${userRemoved}`);
         if (userRemoved) {
           this.handleUserRemovedNotification().catch((err: Error) => {
             BackgroundDiagnostics.record('background.callback.cancel.userRemovedFailed', JSON.stringify(err));
@@ -465,7 +548,11 @@ export class BackgroundSyncManager {
       backgroundTaskManager.on('continuousTaskSuspend', (info) => {
         this.suspendedBySystem = info.suspendState;
         this.lastSuspendReason = info.suspendReason;
-        this.lastSuspendMessage = info.suspendMessage === undefined ? '' : JSON.stringify(info.suspendMessage);
+        // suspendMessage is only available from API 26; access dynamically so the
+        // API 20 build still compiles while API 26 runtimes can persist it.
+        const suspendInfo = JSON.parse(JSON.stringify(info)) as Record<string, Object>;
+        const suspendMessage = suspendInfo['suspendMessage'];
+        this.lastSuspendMessage = suspendMessage === undefined ? '' : JSON.stringify(suspendMessage);
         BackgroundDiagnostics.record('background.callback.suspend', `continuousTaskId=${info.continuousTaskId}, suspendState=${info.suspendState}, reason=${this.lastSuspendReason}, message=${this.lastSuspendMessage}`);
         PreferencesManager.getInstance().putString(Constants.PREF_BACKGROUND_SUSPEND_REASON, String(this.lastSuspendReason)).catch((err: Error) => {
           BackgroundDiagnostics.record('background.suspend.persistFailed', JSON.stringify(err));
@@ -485,6 +572,24 @@ export class BackgroundSyncManager {
     } catch (err) {
       BackgroundDiagnostics.record('background.callbacks.failed', JSON.stringify(err));
     }
+  }
+
+  /**
+   * Decides whether a continuous-task cancel was caused by the user removing
+   * the persistent notification.
+   *
+   * On API 26 the detailed reason is authoritative: only 3
+   * (USER_CANCEL_REMOVE_NOTIFICATION) is a user removal; all other detailed
+   * reasons (4/6/7/8/9/10/11/12/13/14) are system cancels and must auto-heal.
+   * On older API levels detailedReason is absent, so fall back to the coarse
+   * reason values (1=USER_CANCEL, 3=USER_CANCEL_REMOVE_NOTIFICATION).
+   */
+  private isUserRemovedCancel(reason: number, detailedReason: number): boolean {
+    if (detailedReason >= 0) {
+      return detailedReason === 3;
+    }
+    return reason === backgroundTaskManager.ContinuousTaskCancelReason.USER_CANCEL ||
+      reason === backgroundTaskManager.ContinuousTaskCancelReason.USER_CANCEL_REMOVE_NOTIFICATION;
   }
 
   private async handleSystemCancel(): Promise<void> {

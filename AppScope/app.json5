@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.syncthing.syncthingharmonyosnext",
     "vendor": "Syncthing Community",
-    "versionCode": 2000000,
-    "versionName": "2.0.0",
+    "versionCode": 2000001,
+    "versionName": "2.0.1",
     "icon": "$media:syncthing",
     "label": "$string:app_name",
     "targetAPIVersion": 20,
