@@ -170,7 +170,7 @@ ArkTS 负责 UI、生命周期、应用偏好、后台任务、通知、沙箱/�
 - 构建输出：签名 HAP `entry/build/default/outputs/default/entry-default-signed.hap`；未配置签名时输出 `entry-default-unsigned.hap`。
 - `hdc install` 安装到平板/PC 后启动，首次运行按向导申请下载目录授权。
 
-仓库根目录随版本发布附带一个可直接安装的真机 HAP：`Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap`（未签名；如需安装到真机请先用 DevEco Studio 为其签名）。
+随 GitHub Release 发布一个可直接安装的真机 HAP：`Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap`（未签名；如需安装到真机请先用 DevEco Studio 为其签名）。可从 [v2.0.2 Release](https://github.com/forwardz666/Syncthing-for-HarmonyOS/releases/tag/v2.0.2) 下载。
 
 ### （高级）重新构建 Go 核心
 
@@ -201,7 +201,7 @@ ArkTS 负责 UI、生命周期、应用偏好、后台任务、通知、沙箱/�
 - `entry/src/main/cpp/`：Harmony NAPI 桥接源码。
 - `entry/src/main/libs/`、`entry/src/main/resources/rawfile/`：受控提交的预编译核心/桥接产物。
 - `build_syncthing_harmonyos.py`：把 Syncthing Go 核心交叉编译为鸿蒙静态库的构建脚本。
-- `Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap`：随版本发布的未签名 HAP。
+- `Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap`：随 GitHub Release 发布的未签名 HAP（不纳入仓库，避免仓库体积膨胀）。
 
 ## 许可证
 

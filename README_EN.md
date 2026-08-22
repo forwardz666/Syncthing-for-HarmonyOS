@@ -167,7 +167,7 @@ Use **DevEco Studio** or a configured HarmonyOS command-line environment:
 - Build output: signed HAP `entry/build/default/outputs/default/entry-default-signed.hap`; `entry-default-unsigned.hap` when no signing config is set.
 - Install onto a tablet/PC with `hdc install`, launch, and follow the wizard on first run to grant Download-directory authorization.
 
-The repo root ships a ready-to-install device HAP per release: `Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap` (unsigned; sign it with DevEco Studio before installing on a real device).
+A ready-to-install device HAP is attached to each GitHub Release: `Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap` (unsigned; sign it with DevEco Studio before installing on a real device). You can get it from the [v2.0.2 Release](https://github.com/forwardz666/Syncthing-for-HarmonyOS/releases/tag/v2.0.2).
 
 ### (Advanced) Rebuilding the Go core
 
@@ -198,7 +198,7 @@ Only needed when modifying the embedded core/NAPI bridge:
 - `entry/src/main/cpp/`: Harmony NAPI bridge source.
 - `entry/src/main/libs/`, `entry/src/main/resources/rawfile/`: controlled prebuilt core/bridge artifacts.
 - `build_syncthing_harmonyos.py`: build script to cross-compile the Syncthing Go core into a Harmony static library.
-- `Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap`: the unsigned HAP shipped with this release.
+- `Syncthing-for-HarmonyOS-v2.0.2-unsigned.hap`: the unsigned HAP attached to the GitHub Release (not checked into the repo, to keep the repository size reasonable).
 
 ## License
 
