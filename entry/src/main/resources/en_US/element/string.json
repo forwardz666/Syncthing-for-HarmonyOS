@@ -1,0 +1,1628 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Syncthing - decentralized file synchronization"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Syncthing main entry"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Syncthing"
+    },
+    {
+      "name": "internet_permission_reason",
+      "value": "Required for peer-to-peer file synchronization"
+    },
+    {
+      "name": "network_permission_reason",
+      "value": "Required to detect network state for sync conditions"
+    },
+    {
+      "name": "background_permission_reason",
+      "value": "Required to keep file synchronization running in background"
+    },
+    {
+      "name": "storage_permission_reason",
+      "value": "Required to read and write synced files"
+    },
+    {
+      "name": "notification_permission_reason",
+      "value": "Required to show sync status notifications"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "Required to scan QR codes for device IDs"
+    },
+    {
+      "name": "nav_devices",
+      "value": "Devices"
+    },
+    {
+      "name": "nav_folders",
+      "value": "Folders"
+    },
+    {
+      "name": "nav_status",
+      "value": "Status"
+    },
+    {
+      "name": "add",
+      "value": "Add"
+    },
+    {
+      "name": "save",
+      "value": "Save"
+    },
+    {
+      "name": "create",
+      "value": "Create"
+    },
+    {
+      "name": "delete",
+      "value": "Delete"
+    },
+    {
+      "name": "cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "refresh",
+      "value": "Refresh"
+    },
+    {
+      "name": "clear",
+      "value": "Clear"
+    },
+    {
+      "name": "back",
+      "value": "Back"
+    },
+    {
+      "name": "forward",
+      "value": "Forward"
+    },
+    {
+      "name": "reload",
+      "value": "Reload"
+    },
+    {
+      "name": "copy",
+      "value": "Copy"
+    },
+    {
+      "name": "add_device",
+      "value": "Add Device"
+    },
+    {
+      "name": "edit_device",
+      "value": "Edit Device"
+    },
+    {
+      "name": "device_id",
+      "value": "Device ID"
+    },
+    {
+      "name": "device_name",
+      "value": "Name"
+    },
+    {
+      "name": "addresses",
+      "value": "Addresses"
+    },
+    {
+      "name": "discovered_devices",
+      "value": "Discovered Devices"
+    },
+    {
+      "name": "no_devices",
+      "value": "No devices configured"
+    },
+    {
+      "name": "loading_devices",
+      "value": "Loading devices..."
+    },
+    {
+      "name": "loading_device",
+      "value": "Loading device..."
+    },
+    {
+      "name": "device_connected",
+      "value": "Connected"
+    },
+    {
+      "name": "device_connections",
+      "value": "Device Connections"
+    },
+    {
+      "name": "device_connected_count",
+      "value": "%d device(s) connected"
+    },
+    {
+      "name": "pending_pairing",
+      "value": "Pending Pairing"
+    },
+    {
+      "name": "ignore",
+      "value": "Ignore"
+    },
+    {
+      "name": "delete_device_confirm",
+      "value": "Remove this device from Syncthing?"
+    },
+    {
+      "name": "delete_device",
+      "value": "Delete Device"
+    },
+    {
+      "name": "device_deleted",
+      "value": "Device deleted"
+    },
+    {
+      "name": "device_not_found",
+      "value": "Device not found"
+    },
+    {
+      "name": "device_save_not_confirmed",
+      "value": "Device save was not confirmed by Syncthing"
+    },
+    {
+      "name": "device_share_folders_failed",
+      "value": "Device saved, but folder sharing failed"
+    },
+    {
+      "name": "device_id_copied",
+      "value": "Device ID copied"
+    },
+    {
+      "name": "device_id_invalid",
+      "value": "Device ID is invalid"
+    },
+    {
+      "name": "device_id_required",
+      "value": "Device ID is required"
+    },
+    {
+      "name": "device_id_scanned",
+      "value": "Device ID scanned"
+    },
+    {
+      "name": "device_addresses_invalid",
+      "value": "Device addresses are invalid"
+    },
+    {
+      "name": "remote_device_name",
+      "value": "Remote device name"
+    },
+    {
+      "name": "dynamic",
+      "value": "dynamic"
+    },
+    {
+      "name": "enter_remote_device_id",
+      "value": "Enter remote device ID"
+    },
+    {
+      "name": "add_device_prompt",
+      "value": "Add a remote device to start syncing folders"
+    },
+    {
+      "name": "saving",
+      "value": "Saving"
+    },
+    {
+      "name": "scan",
+      "value": "Scan"
+    },
+    {
+      "name": "all",
+      "value": "All"
+    },
+    {
+      "name": "none",
+      "value": "None"
+    },
+    {
+      "name": "add_folder",
+      "value": "Add Folder"
+    },
+    {
+      "name": "edit_folder",
+      "value": "Edit Folder"
+    },
+    {
+      "name": "folder_id",
+      "value": "Folder ID"
+    },
+    {
+      "name": "label",
+      "value": "Label"
+    },
+    {
+      "name": "custom_label",
+      "value": "Custom Label"
+    },
+    {
+      "name": "custom",
+      "value": "Custom"
+    },
+    {
+      "name": "no_folders",
+      "value": "No folders configured"
+    },
+    {
+      "name": "loading_folders",
+      "value": "Loading folders..."
+    },
+    {
+      "name": "folder_type",
+      "value": "Folder Type"
+    },
+    {
+      "name": "send_receive",
+      "value": "Send & Receive"
+    },
+    {
+      "name": "send_only",
+      "value": "Send Only"
+    },
+    {
+      "name": "receive_only",
+      "value": "Receive Only"
+    },
+    {
+      "name": "encrypted",
+      "value": "Encrypted"
+    },
+    {
+      "name": "sync_scenario",
+      "value": "Sync Scenario"
+    },
+    {
+      "name": "pc_to_phone",
+      "value": "PC -> Phone"
+    },
+    {
+      "name": "phone_to_pc",
+      "value": "Phone -> PC"
+    },
+    {
+      "name": "two_way",
+      "value": "Two-way"
+    },
+    {
+      "name": "pull_order",
+      "value": "Pull Order"
+    },
+    {
+      "name": "random",
+      "value": "Random"
+    },
+    {
+      "name": "alphabetic",
+      "value": "Alphabetic"
+    },
+    {
+      "name": "smallest",
+      "value": "Smallest"
+    },
+    {
+      "name": "largest",
+      "value": "Largest"
+    },
+    {
+      "name": "oldest",
+      "value": "Oldest"
+    },
+    {
+      "name": "newest",
+      "value": "Newest"
+    },
+    {
+      "name": "file_versioning",
+      "value": "File Versioning"
+    },
+    {
+      "name": "folder_actions",
+      "value": "Folder Actions"
+    },
+    {
+      "name": "folder_status",
+      "value": "Status"
+    },
+    {
+      "name": "sync_path_readonly",
+      "value": "Sync Path (read-only)"
+    },
+    {
+      "name": "sync_path_hint",
+      "value": "All sync folders are located under Download/Syncthing/"
+    },
+    {
+      "name": "folder_id_required",
+      "value": "Folder ID is required"
+    },
+    {
+      "name": "folder_path_required",
+      "value": "Folder path is required"
+    },
+    {
+      "name": "folder_saved",
+      "value": "Folder saved"
+    },
+    {
+      "name": "folder_created",
+      "value": "Folder created"
+    },
+    {
+      "name": "folder_deleted",
+      "value": "Folder deleted"
+    },
+    {
+      "name": "folder_save_not_confirmed",
+      "value": "Folder save was not confirmed by Syncthing"
+    },
+    {
+      "name": "folder_storage_not_ready",
+      "value": "Folder storage is not ready"
+    },
+    {
+      "name": "folder_load_failed",
+      "value": "Failed to load folder"
+    },
+    {
+      "name": "folder_save_failed",
+      "value": "Failed to save folder"
+    },
+    {
+      "name": "folder_delete_failed",
+      "value": "Failed to delete folder"
+    },
+    {
+      "name": "folder_scan_failed",
+      "value": "Rescan failed"
+    },
+    {
+      "name": "folder_scan_requested",
+      "value": "Rescan requested"
+    },
+    {
+      "name": "folder_empty",
+      "value": "Empty"
+    },
+    {
+      "name": "no_remote_devices",
+      "value": "No remote devices configured"
+    },
+    {
+      "name": "share_with",
+      "value": "Share With"
+    },
+    {
+      "name": "gui_auth_warning",
+      "value": "No username/password set for GUI authentication. Consider setting one."
+    },
+    {
+      "name": "gui_auth_warning_detail",
+      "value": "Consider setting authentication to prevent other users on this computer from accessing Syncthing and your files."
+    },
+    {
+      "name": "gui_auth_set",
+      "value": "Set"
+    },
+    {
+      "name": "gui_auth_ok",
+      "value": "OK"
+    },
+    {
+      "name": "pc_to_phone_hint",
+      "value": "PC to phone: files are received into Download/Syncthing/<folder>."
+    },
+    {
+      "name": "phone_to_pc_hint",
+      "value": "Phone to PC: files inside Download/Syncthing/<folder> are sent."
+    },
+    {
+      "name": "two_way_hint",
+      "value": "Two-way: both sides sync within Download/Syncthing/<folder>."
+    },
+    {
+      "name": "settings_title",
+      "value": "Settings"
+    },
+    {
+      "name": "loading_settings",
+      "value": "Loading settings..."
+    },
+    {
+      "name": "loading_logs",
+      "value": "Loading logs..."
+    },
+    {
+      "name": "loading_changes",
+      "value": "Loading changes..."
+    },
+    {
+      "name": "loading_sync_conditions",
+      "value": "Loading sync conditions..."
+    },
+    {
+      "name": "loading_folder",
+      "value": "Loading folder..."
+    },
+    {
+      "name": "exiting",
+      "value": "Exiting..."
+    },
+    {
+      "name": "exit",
+      "value": "Exit"
+    },
+    {
+      "name": "exit_app_desc",
+      "value": "Stop sync, clear the running notification, and close the app"
+    },
+    {
+      "name": "syncthing_not_ready",
+      "value": "Syncthing service is not ready"
+    },
+    {
+      "name": "create_failed",
+      "value": "Create failed"
+    },
+    {
+      "name": "save_failed",
+      "value": "Save failed"
+    },
+    {
+      "name": "saved",
+      "value": "Saved"
+    },
+    {
+      "name": "settings_saved",
+      "value": "Settings saved"
+    },
+    {
+      "name": "recovered_n_folders",
+      "value": "Recovered %d sync folders"
+    },
+    {
+      "name": "reauth_in_progress",
+      "value": "Re-authorizing..."
+    },
+    {
+      "name": "reauth_dead_folders",
+      "value": "⚠ Sync folder authorization expired (%d)"
+    },
+    {
+      "name": "grant_reauth_path",
+      "value": "Tap to re-select sync directory"
+    },
+    {
+      "name": "grant_download_permission",
+      "value": "Please grant Download directory access first"
+    },
+    {
+      "name": "folder_permission_granted",
+      "value": "Files & folders access granted"
+    },
+    {
+      "name": "picker_choose_dir",
+      "value": "Please select a public directory to sync (recommended: Downloads)"
+    },
+    {
+      "name": "sync_conditions",
+      "value": "Sync Conditions"
+    },
+    {
+      "name": "power_source",
+      "value": "Power Source"
+    },
+    {
+      "name": "run_on_wifi",
+      "value": "Run on Wi-Fi"
+    },
+    {
+      "name": "run_on_wifi_desc",
+      "value": "Allow sync while the default network is Wi-Fi"
+    },
+    {
+      "name": "run_on_mobile_data",
+      "value": "Run on Mobile Data"
+    },
+    {
+      "name": "run_on_mobile_data_desc",
+      "value": "Allow sync while the default network is cellular"
+    },
+    {
+      "name": "listen_addresses",
+      "value": "Listen Addresses"
+    },
+    {
+      "name": "listen_addresses_desc",
+      "value": "Comma separated, usually default"
+    },
+    {
+      "name": "max_receive_kbps",
+      "value": "Max Receive KB/s"
+    },
+    {
+      "name": "max_send_kbps",
+      "value": "Max Send KB/s"
+    },
+    {
+      "name": "max_receive_unlimited",
+      "value": "0 means unlimited"
+    },
+    {
+      "name": "max_send_unlimited",
+      "value": "0 means unlimited"
+    },
+    {
+      "name": "limit_bandwidth_lan",
+      "value": "Limit Bandwidth in LAN"
+    },
+    {
+      "name": "limit_bandwidth_lan_desc",
+      "value": "Apply rate limits to local network peers"
+    },
+    {
+      "name": "nat_traversal",
+      "value": "NAT Traversal"
+    },
+    {
+      "name": "nat_traversal_desc",
+      "value": "Use UPnP/NAT-PMP where available"
+    },
+    {
+      "name": "local_discovery",
+      "value": "Local Discovery"
+    },
+    {
+      "name": "local_discovery_desc",
+      "value": "Find devices on the same network"
+    },
+    {
+      "name": "global_discovery",
+      "value": "Global Discovery"
+    },
+    {
+      "name": "global_discovery_desc",
+      "value": "Use global discovery servers"
+    },
+    {
+      "name": "relays_enabled",
+      "value": "Relaying"
+    },
+    {
+      "name": "relays_enabled_desc",
+      "value": "Allow relay connections when direct LAN/WAN fails"
+    },
+    {
+      "name": "discovery_relay",
+      "value": "Discovery and Relay"
+    },
+    {
+      "name": "syncthing_connections",
+      "value": "Syncthing Connections"
+    },
+    {
+      "name": "run_conditions",
+      "value": "Run Conditions"
+    },
+    {
+      "name": "verbose_logging",
+      "value": "Verbose Logging"
+    },
+    {
+      "name": "verbose_logging_desc",
+      "value": "Show detailed debug logs"
+    },
+    {
+      "name": "debug",
+      "value": "Debug"
+    },
+    {
+      "name": "app",
+      "value": "App"
+    },
+    {
+      "name": "about",
+      "value": "About"
+    },
+    {
+      "name": "app_version",
+      "value": "App Version"
+    },
+    {
+      "name": "syncthing_core",
+      "value": "Syncthing Core"
+    },
+    {
+      "name": "restore",
+      "value": "Restore"
+    },
+    {
+      "name": "first_start_title",
+      "value": "Welcome to Syncthing"
+    },
+    {
+      "name": "first_start_step1",
+      "value": "1. Add folders you want to sync"
+    },
+    {
+      "name": "first_start_step2",
+      "value": "2. Add remote device IDs"
+    },
+    {
+      "name": "first_start_step3",
+      "value": "3. Share folders with devices"
+    },
+    {
+      "name": "first_start_identity",
+      "value": "Device Identity"
+    },
+    {
+      "name": "first_start_generate",
+      "value": "Generate Device Identity"
+    },
+    {
+      "name": "first_start_next",
+      "value": "Next"
+    },
+    {
+      "name": "first_start_previous",
+      "value": "Previous"
+    },
+    {
+      "name": "first_start_privacy",
+      "value": "Privacy & Data Handling"
+    },
+    {
+      "name": "first_start_ready",
+      "value": "You are ready!"
+    },
+    {
+      "name": "first_start_ready_desc",
+      "value": "Start Syncing"
+    },
+    {
+      "name": "first_start_your_id",
+      "value": "Your Device ID:"
+    },
+    {
+      "name": "first_start_next_steps",
+      "value": "Next steps:"
+    },
+    {
+      "name": "language",
+      "value": "Language"
+    },
+    {
+      "name": "language_desc",
+      "value": "Choose the app display language"
+    },
+    {
+      "name": "language_follow_system",
+      "value": "Follow System"
+    },
+    {
+      "name": "next",
+      "value": "Next"
+    },
+    {
+      "name": "previous",
+      "value": "Previous"
+    },
+    {
+      "name": "yes",
+      "value": "Yes"
+    },
+    {
+      "name": "no",
+      "value": "No"
+    },
+    {
+      "name": "retry",
+      "value": "Retry"
+    },
+    {
+      "name": "ready",
+      "value": "Ready"
+    },
+    {
+      "name": "settings",
+      "value": "Settings"
+    },
+    {
+      "name": "logs",
+      "value": "Logs"
+    },
+    {
+      "name": "tools",
+      "value": "Tools"
+    },
+    {
+      "name": "unknown",
+      "value": "Unknown"
+    },
+    {
+      "name": "paused",
+      "value": "Paused"
+    },
+    {
+      "name": "idle",
+      "value": "Idle"
+    },
+    {
+      "name": "state_idle",
+      "value": "Idle"
+    },
+    {
+      "name": "add_folder_prompt",
+      "value": "Add a sync folder (located under Download/Syncthing/)"
+    },
+    {
+      "name": "state_syncing",
+      "value": "Syncing"
+    },
+    {
+      "name": "state_scanning",
+      "value": "Scanning"
+    },
+    {
+      "name": "state_preparing",
+      "value": "Preparing"
+    },
+    {
+      "name": "state_waiting",
+      "value": "Waiting"
+    },
+    {
+      "name": "state_cleanup",
+      "value": "Cleaning up"
+    },
+    {
+      "name": "state_error",
+      "value": "Error"
+    },
+    {
+      "name": "loading_init",
+      "value": "Initializing..."
+    },
+    {
+      "name": "loading_start_services",
+      "value": "Starting services..."
+    },
+    {
+      "name": "welcome_syncthing",
+      "value": "Welcome to Syncthing!"
+    },
+    {
+      "name": "init_failed",
+      "value": "Initialization failed: %s"
+    },
+    {
+      "name": "first_start_desc1",
+      "value": "Syncthing replaces proprietary sync and cloud services with something open, trustworthy and decentralized."
+    },
+    {
+      "name": "first_start_desc2",
+      "value": "Your data is your data alone. You deserve to choose where it is stored."
+    },
+    {
+      "name": "first_start_encryption",
+      "value": "All data is encrypted in transit using TLS"
+    },
+    {
+      "name": "first_start_local",
+      "value": "Your files never leave your devices unless you want them to"
+    },
+    {
+      "name": "first_start_no_track",
+      "value": "No registration, no cloud service, no tracking"
+    },
+    {
+      "name": "first_start_agree",
+      "value": "I understand and agree to the privacy policy"
+    },
+    {
+      "name": "first_start_identity_desc",
+      "value": "Each device gets a unique identity. This ID is used to identify your device to others."
+    },
+    {
+      "name": "first_start_next_steps_desc",
+      "value": "Syncthing is configured and ready to sync your files. Add remote devices and folders to get started."
+    },
+    {
+      "name": "run_mode",
+      "value": "Run Mode"
+    },
+    {
+      "name": "follow",
+      "value": "Follow"
+    },
+    {
+      "name": "force_start",
+      "value": "Force Start"
+    },
+    {
+      "name": "force_stop",
+      "value": "Force Stop"
+    },
+    {
+      "name": "uptime",
+      "value": "Uptime"
+    },
+    {
+      "name": "ram",
+      "value": "Memory"
+    },
+    {
+      "name": "download",
+      "value": "Download"
+    },
+    {
+      "name": "upload",
+      "value": "Upload"
+    },
+    {
+      "name": "discovery",
+      "value": "Discovery"
+    },
+    {
+      "name": "connected",
+      "value": "Connected"
+    },
+    {
+      "name": "core_debug",
+      "value": "Core Debug"
+    },
+    {
+      "name": "native_running",
+      "value": "Native Process"
+    },
+    {
+      "name": "native_version",
+      "value": "Native Version"
+    },
+    {
+      "name": "rest",
+      "value": "REST API"
+    },
+    {
+      "name": "config_devices",
+      "value": "Configured Devices"
+    },
+    {
+      "name": "gui_address",
+      "value": "GUI Address"
+    },
+    {
+      "name": "discovery_errors",
+      "value": "Discovery Errors"
+    },
+    {
+      "name": "no_pending",
+      "value": "No pending requests"
+    },
+    {
+      "name": "feature_waiting",
+      "value": "Waiting"
+    },
+    {
+      "name": "no_remote_devices_configured",
+      "value": "No remote devices configured"
+    },
+    {
+      "name": "no_active_connections",
+      "value": "No active device connections"
+    },
+    {
+      "name": "recent_core_log",
+      "value": "Recent Core Log"
+    },
+    {
+      "name": "no_log_entries",
+      "value": "No log entries"
+    },
+    {
+      "name": "web_gui",
+      "value": "Web GUI"
+    },
+    {
+      "name": "recent_changes",
+      "value": "Recent Changes"
+    },
+    {
+      "name": "device_id_label",
+      "value": "Device ID: %s"
+    },
+    {
+      "name": "gui_label",
+      "value": "GUI: %s"
+    },
+    {
+      "name": "updated_label",
+      "value": "Updated: %s"
+    },
+    {
+      "name": "core_label",
+      "value": "Core: %s"
+    },
+    {
+      "name": "download_total",
+      "value": "%s total"
+    },
+    {
+      "name": "upload_total",
+      "value": "%s total"
+    },
+    {
+      "name": "status_running",
+      "value": "Syncthing Running"
+    },
+    {
+      "name": "status_rest_available",
+      "value": "Syncthing REST Available"
+    },
+    {
+      "name": "status_starting",
+      "value": "Syncthing Starting"
+    },
+    {
+      "name": "status_crashed",
+      "value": "Syncthing Has Crashed"
+    },
+    {
+      "name": "status_not_running",
+      "value": "Syncthing Not Running"
+    },
+    {
+      "name": "reason_forced_start",
+      "value": "Forced to start from the status controls."
+    },
+    {
+      "name": "reason_forced_stop",
+      "value": "Forced to stop from the status controls."
+    },
+    {
+      "name": "reason_rest_live",
+      "value": "REST API is reachable and returning live status."
+    },
+    {
+      "name": "reason_waiting_rest",
+      "value": "Waiting for Syncthing REST API."
+    },
+    {
+      "name": "reason_following_conditions",
+      "value": "Following configured run conditions."
+    },
+    {
+      "name": "rest_missing",
+      "value": "REST API client is not registered."
+    },
+    {
+      "name": "rest_unreachable",
+      "value": "Syncthing REST API is not reachable."
+    },
+    {
+      "name": "status_requires_key",
+      "value": "System status requires a valid API key."
+    },
+    {
+      "name": "native_debug_unavailable",
+      "value": "Native debug unavailable: %s"
+    },
+    {
+      "name": "pending_device_ignored",
+      "value": "Pending device ignored"
+    },
+    {
+      "name": "pending_folder_ignored",
+      "value": "Pending folder ignored"
+    },
+    {
+      "name": "ignore_failed",
+      "value": "Ignore failed"
+    },
+    {
+      "name": "copy_failed",
+      "value": "Copy failed"
+    },
+    {
+      "name": "background_off",
+      "value": "Off"
+    },
+    {
+      "name": "background_running",
+      "value": "Running #%d"
+    },
+    {
+      "name": "background_running_plain",
+      "value": "Running"
+    },
+    {
+      "name": "background_waiting_task",
+      "value": "Enabled, waiting for task"
+    },
+    {
+      "name": "pending_folder_offer",
+      "value": "%s from %s"
+    },
+    {
+      "name": "compression",
+      "value": "Compression"
+    },
+    {
+      "name": "introducer",
+      "value": "Introducer"
+    },
+    {
+      "name": "introducer_desc",
+      "value": "Add devices known to the introducer to our device list (for mutually shared folders)."
+    },
+    {
+      "name": "auto_accept_folders",
+      "value": "Auto Accept Folders"
+    },
+    {
+      "name": "auto_accept_folders_desc",
+      "value": "Automatically accept folders offered by this device without asking."
+    },
+    {
+      "name": "pause_device",
+      "value": "Pause Device"
+    },
+    {
+      "name": "pause_device_desc",
+      "value": "Pause synchronization with this device while keeping its configuration."
+    },
+    {
+      "name": "untrusted_device",
+      "value": "Untrusted Device"
+    },
+    {
+      "name": "untrusted_device_desc",
+      "value": "Require encrypted folder passwords when sharing with this device."
+    },
+    {
+      "name": "current_address",
+      "value": "Current Address"
+    },
+    {
+      "name": "syncthing_version",
+      "value": "Syncthing Version"
+    },
+    {
+      "name": "compression_metadata",
+      "value": "Metadata"
+    },
+    {
+      "name": "compression_always",
+      "value": "Always"
+    },
+    {
+      "name": "compression_never",
+      "value": "Never"
+    },
+    {
+      "name": "device_load_failed",
+      "value": "Failed to load device"
+    },
+    {
+      "name": "device_save_failed",
+      "value": "Failed to save device"
+    },
+    {
+      "name": "device_delete_failed",
+      "value": "Failed to delete device"
+    },
+    {
+      "name": "connected_to_remote_device",
+      "value": "Connected to remote device"
+    },
+    {
+      "name": "device_added_connected",
+      "value": "Device added and connected"
+    },
+    {
+      "name": "device_saved_connected",
+      "value": "Device saved and connected"
+    },
+    {
+      "name": "saved_await_remote",
+      "value": "Saved. Add or accept this phone on the remote device to connect."
+    },
+    {
+      "name": "device_added_waiting",
+      "value": "Device added; waiting for remote approval"
+    },
+    {
+      "name": "device_saved_waiting",
+      "value": "Device saved; waiting for connection"
+    },
+    {
+      "name": "folder_sharing_updated",
+      "value": "Folder sharing updated"
+    },
+    {
+      "name": "folder_sharing_not_confirmed",
+      "value": "Folder sharing was not confirmed by Syncthing"
+    },
+    {
+      "name": "folder_update_failed",
+      "value": "Failed to update folder"
+    },
+    {
+      "name": "qr_unsupported",
+      "value": "QR scanner is not supported on this device"
+    },
+    {
+      "name": "unable_open_scanner",
+      "value": "Unable to open scanner"
+    },
+    {
+      "name": "no_qr_id",
+      "value": "No device ID found in QR code"
+    },
+    {
+      "name": "qr_scan_failed",
+      "value": "QR scan failed"
+    },
+    {
+      "name": "encryption_password",
+      "value": "Encryption password"
+    },
+    {
+      "name": "folders_count",
+      "value": "Folders (%d/%d)"
+    },
+    {
+      "name": "receive_encrypted",
+      "value": "Receive Encrypted"
+    },
+    {
+      "name": "percent_synced",
+      "value": "%d%% synced"
+    },
+    {
+      "name": "watch_for_changes",
+      "value": "Watch for Changes"
+    },
+    {
+      "name": "ignore_permissions",
+      "value": "Ignore Permissions"
+    },
+    {
+      "name": "pause_folder",
+      "value": "Pause Folder"
+    },
+    {
+      "name": "scanning",
+      "value": "Scanning"
+    },
+    {
+      "name": "rescan",
+      "value": "Rescan"
+    },
+    {
+      "name": "deleting",
+      "value": "Deleting"
+    },
+    {
+      "name": "confirm_delete",
+      "value": "Confirm Delete"
+    },
+    {
+      "name": "versioning_trashcan",
+      "value": "Trashcan"
+    },
+    {
+      "name": "versioning_simple",
+      "value": "Simple"
+    },
+    {
+      "name": "versioning_staggered",
+      "value": "Staggered"
+    },
+    {
+      "name": "versioning_external",
+      "value": "External"
+    },
+    {
+      "name": "cleanout_days",
+      "value": "Cleanout Days"
+    },
+    {
+      "name": "keep_versions",
+      "value": "Keep Versions"
+    },
+    {
+      "name": "max_age_days",
+      "value": "Max Age Days"
+    },
+    {
+      "name": "version_command",
+      "value": "Command"
+    },
+    {
+      "name": "version_command_placeholder",
+      "value": "command path"
+    },
+    {
+      "name": "share_with_devices",
+      "value": "Share With Devices (%d/%d)"
+    },
+    {
+      "name": "folder_not_found",
+      "value": "Folder not found"
+    },
+    {
+      "name": "tap_delete_confirm",
+      "value": "Tap Delete again to confirm"
+    },
+    {
+      "name": "local_items",
+      "value": "%d local items"
+    },
+    {
+      "name": "folder_id_placeholder",
+      "value": "folder-id"
+    },
+    {
+      "name": "log_entry_count",
+      "value": "%d log entries"
+    },
+    {
+      "name": "logs_load_failed",
+      "value": "Failed to load logs"
+    },
+    {
+      "name": "recent_event_count",
+      "value": "%d recent events"
+    },
+    {
+      "name": "recent_changes_load_failed",
+      "value": "Failed to load recent changes"
+    },
+    {
+      "name": "no_recent_changes",
+      "value": "No recent changes"
+    },
+    {
+      "name": "action_added",
+      "value": "Added"
+    },
+    {
+      "name": "action_modified",
+      "value": "Modified"
+    },
+    {
+      "name": "action_deleted",
+      "value": "Deleted"
+    },
+    {
+      "name": "action_synced",
+      "value": "Synced"
+    },
+    {
+      "name": "action_connected",
+      "value": "Connected"
+    },
+    {
+      "name": "action_disconnected",
+      "value": "Disconnected"
+    },
+    {
+      "name": "action_scanning",
+      "value": "Scanning"
+    },
+    {
+      "name": "action_event",
+      "value": "Event"
+    },
+    {
+      "name": "global_announce_servers",
+      "value": "Global Announce Servers"
+    },
+    {
+      "name": "run_on_wifi_saved",
+      "value": "Run on Wi-Fi saved"
+    },
+    {
+      "name": "run_on_mobile_data_saved",
+      "value": "Run on Mobile Data saved"
+    },
+    {
+      "name": "verbose_logging_saved",
+      "value": "Verbose Logging saved"
+    },
+    {
+      "name": "options_load_failed",
+      "value": "Failed to load Syncthing options"
+    },
+    {
+      "name": "options_save_failed",
+      "value": "Failed to save Syncthing options"
+    },
+    {
+      "name": "options_saved",
+      "value": "Syncthing options saved"
+    },
+    {
+      "name": "options_saved_verify_failed",
+      "value": "Options saved, verification failed"
+    },
+    {
+      "name": "settings_load_failed",
+      "value": "Failed to load settings"
+    },
+    {
+      "name": "exit_failed",
+      "value": "Failed to exit application"
+    },
+    {
+      "name": "sync_conditions_summary",
+      "value": "Wi-Fi, mobile data, power, schedule"
+    },
+    {
+      "name": "background",
+      "value": "Background"
+    },
+    {
+      "name": "background_sync",
+      "value": "Background Sync"
+    },
+    {
+      "name": "background_sync_desc",
+      "value": "Keep Syncthing running with a persistent system notification"
+    },
+    {
+      "name": "network",
+      "value": "Network"
+    },
+    {
+      "name": "run_on_metered_wifi",
+      "value": "Run on Metered Wi-Fi"
+    },
+    {
+      "name": "run_on_metered_wifi_desc",
+      "value": "Allow sync on Wi-Fi networks reported as metered"
+    },
+    {
+      "name": "run_while_roaming",
+      "value": "Run while Roaming"
+    },
+    {
+      "name": "run_while_roaming_desc",
+      "value": "Pending roaming state detection"
+    },
+    {
+      "name": "wifi_ssid_list",
+      "value": "Wi-Fi SSID List"
+    },
+    {
+      "name": "wifi_ssid_list_desc",
+      "value": "Pending current SSID access"
+    },
+    {
+      "name": "allowed_ssids",
+      "value": "Allowed SSIDs"
+    },
+    {
+      "name": "power",
+      "value": "Power"
+    },
+    {
+      "name": "respect_battery_saver",
+      "value": "Respect Battery Saver"
+    },
+    {
+      "name": "respect_battery_saver_desc",
+      "value": "Pause sync while HarmonyOS power save mode is active"
+    },
+    {
+      "name": "respect_master_sync",
+      "value": "Respect Master Sync"
+    },
+    {
+      "name": "respect_master_sync_desc",
+      "value": "Pending Harmony equivalent mapping"
+    },
+    {
+      "name": "run_in_flight_mode",
+      "value": "Run in Flight Mode"
+    },
+    {
+      "name": "run_in_flight_mode_desc",
+      "value": "Pending flight mode state integration"
+    },
+    {
+      "name": "schedule",
+      "value": "Schedule"
+    },
+    {
+      "name": "timed_schedule",
+      "value": "Timed Schedule"
+    },
+    {
+      "name": "timed_schedule_desc",
+      "value": "Alternate between sync and sleep windows"
+    },
+    {
+      "name": "sync_duration_minutes",
+      "value": "Sync Duration Minutes"
+    },
+    {
+      "name": "sync_duration_minutes_desc",
+      "value": "How long each active window lasts"
+    },
+    {
+      "name": "sleep_interval_minutes",
+      "value": "Sleep Interval Minutes"
+    },
+    {
+      "name": "sleep_interval_minutes_desc",
+      "value": "How long to pause after each active window"
+    },
+    {
+      "name": "power_any",
+      "value": "Any"
+    },
+    {
+      "name": "power_charging",
+      "value": "Charging"
+    },
+    {
+      "name": "power_battery",
+      "value": "Battery"
+    },
+    {
+      "name": "starting_background_sync",
+      "value": "Starting background sync..."
+    },
+    {
+      "name": "stopping_background_sync",
+      "value": "Stopping background sync..."
+    },
+    {
+      "name": "background_sync_saved",
+      "value": "Background Sync saved. System continuous task notification is active."
+    },
+    {
+      "name": "background_sync_stopped",
+      "value": "Background Sync stopped. System continuous task notification removed."
+    },
+    {
+      "name": "background_sync_failed",
+      "value": "Background Sync failed: %s"
+    },
+    {
+      "name": "sync_condition_saved",
+      "value": "Sync condition saved"
+    },
+    {
+      "name": "conditions_load_failed",
+      "value": "Failed to load sync conditions"
+    },
+    {
+      "name": "pending_charging",
+      "value": "Pending: charging detection"
+    },
+    {
+      "name": "web_gui_title",
+      "value": "Syncthing Web GUI"
+    },
+    {
+      "name": "webgui_loading",
+      "value": "Loading Syncthing Web GUI..."
+    },
+    {
+      "name": "webgui_load_failed",
+      "value": "Web GUI load failed. Check whether the Syncthing service is running."
+    },
+    {
+      "name": "webgui_reload_failed",
+      "value": "Web GUI reload failed."
+    },
+    {
+      "name": "syncthing_not_ready_yet",
+      "value": "Syncthing service is not ready yet."
+    },
+    {
+      "name": "starting_syncthing_service",
+      "value": "Starting Syncthing service..."
+    },
+    {
+      "name": "memory_usage",
+      "value": "Memory Usage"
+    },
+    {
+      "name": "notification_active",
+      "value": "Syncing · Received %s · Sent %s · %d device(s) connected"
+    },
+    {
+      "name": "notification_deleted_text",
+      "value": "You removed the background sync notification, so Syncthing no longer runs in the background. Open the app and re-enable Background Sync to continue."
+    },
+    {
+      "name": "notification_deleted_title",
+      "value": "Background sync stopped"
+    },
+    {
+      "name": "notification_idle",
+      "value": "Background sync running · No devices connected · Received %s · Sent %s"
+    },
+    {
+      "name": "notification_paused",
+      "value": "Paused by sync conditions · Received %s · Sent %s"
+    },
+    {
+      "name": "notification_suspend_text",
+      "value": "System suspend reason: %s"
+    },
+    {
+      "name": "notification_suspend_title",
+      "value": "Background sync suspended by system"
+    },
+    {
+      "name": "notification_title",
+      "value": "Syncthing background sync"
+    },
+    {
+      "name": "run_state",
+      "value": "Run State"
+    },
+    {
+      "name": "run_state_error",
+      "value": "Error"
+    },
+    {
+      "name": "run_state_running",
+      "value": "Running"
+    },
+    {
+      "name": "run_state_starting",
+      "value": "Starting"
+    },
+    {
+      "name": "run_state_stopped",
+      "value": "Stopped"
+    },
+    {
+      "name": "work_scheduler_watch_text",
+      "value": "Syncthing core is not running. Open the app to check background sync."
+    },
+    {
+      "name": "work_scheduler_watch_title",
+      "value": "Syncthing is not running"
+    },
+    {
+      "name": "theme",
+      "value": "Theme"
+    },
+    {
+      "name": "theme_desc",
+      "value": "Choose the appearance"
+    },
+    {
+      "name": "theme_follow_system",
+      "value": "Follow System"
+    },
+    {
+      "name": "theme_light",
+      "value": "Light"
+    },
+    {
+      "name": "theme_dark",
+      "value": "Dark"
+    },
+    {
+      "name": "theme_saved",
+      "value": "Theme saved"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "modelVersion": "6.0.1",
+  "dependencies": {
+  },
+  "execution": {
+    "incremental": false,
+    "daemon": false
+  },
+  "logging": {
+    "level": "info"
+  },
+  "debugging": {
+    "stacktrace": false
+  },
+  "nodeOptions": {
+  }
+}

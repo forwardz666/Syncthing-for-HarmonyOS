@@ -1,0 +1,144 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#0F0F13"
+    },
+    {
+      "name": "page_background",
+      "value": "#0F0F13"
+    },
+    {
+      "name": "background_secondary",
+      "value": "#1B1B20"
+    },
+    {
+      "name": "background_neutral",
+      "value": "#2A2A30"
+    },
+    {
+      "name": "background_disabled",
+      "value": "#2A2A30"
+    },
+    {
+      "name": "background_alternate",
+      "value": "#1A1A1F"
+    },
+    {
+      "name": "card_background",
+      "value": "#1E1E23"
+    },
+    {
+      "name": "header_background",
+      "value": "#0F0F13"
+    },
+    {
+      "name": "input_background",
+      "value": "#1E1E23"
+    },
+    {
+      "name": "button_secondary_background",
+      "value": "#2A2A30"
+    },
+    {
+      "name": "button_secondary_text",
+      "value": "#E6E6E6"
+    },
+    {
+      "name": "text_primary",
+      "value": "#E6E6E6"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#A0A0A8"
+    },
+    {
+      "name": "text_tertiary",
+      "value": "#7A7A80"
+    },
+    {
+      "name": "icon_secondary",
+      "value": "#6A6A70"
+    },
+    {
+      "name": "primary",
+      "value": "#0A84FF"
+    },
+    {
+      "name": "primary_pressed_background",
+      "value": "#0A84FF"
+    },
+    {
+      "name": "success",
+      "value": "#30D158"
+    },
+    {
+      "name": "danger",
+      "value": "#FF453A"
+    },
+    {
+      "name": "warning",
+      "value": "#FF9F0A"
+    },
+    {
+      "name": "warning_text",
+      "value": "#FFB84D"
+    },
+    {
+      "name": "warning_subtext",
+      "value": "#FFD9A0"
+    },
+    {
+      "name": "warning_background",
+      "value": "#3A2E12"
+    },
+    {
+      "name": "warning_background_soft",
+      "value": "#3A2E12"
+    },
+    {
+      "name": "warning_chip_background",
+      "value": "#3A2E12"
+    },
+    {
+      "name": "success_chip_background",
+      "value": "#1E2E20"
+    },
+    {
+      "name": "info_background",
+      "value": "#10233A"
+    },
+    {
+      "name": "danger_background",
+      "value": "#3A1D1D"
+    },
+    {
+      "name": "danger_alt",
+      "value": "#FF6B61"
+    },
+    {
+      "name": "text_on_primary",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "input_border",
+      "value": "#3A3A40"
+    },
+    {
+      "name": "input_hover_background",
+      "value": "#23232A"
+    },
+    {
+      "name": "input_hover_border",
+      "value": "#4DA3FF"
+    },
+    {
+      "name": "input_focus_background",
+      "value": "#1E1E23"
+    },
+    {
+      "name": "input_focus_border",
+      "value": "#0A84FF"
+    }
+  ]
+}

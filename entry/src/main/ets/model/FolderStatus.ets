@@ -1,0 +1,37 @@
+export interface FolderStatus {
+  errors: number;
+  globalBytes: number;
+  globalDeleted: number;
+  globalDirectories: number;
+  globalFiles: number;
+  globalSymlinks: number;
+  globalTotalItems: number;
+  ignorePatterns: boolean;
+  inSyncBytes: number;
+  inSyncFiles: number;
+  invalid: string;
+  localBytes: number;
+  localDeleted: number;
+  localDirectories: number;
+  localFiles: number;
+  localSymlinks: number;
+  localTotalItems: number;
+  needBytes: number;
+  needDeletes: number;
+  needDirectories: number;
+  needFiles: number;
+  needSymlinks: number;
+  needTotalItems: number;
+  pullErrors: number;
+  receiveOnlyChangedBytes: number;
+  receiveOnlyChangedDeletes: number;
+  receiveOnlyChangedDirectories: number;
+  receiveOnlyChangedFiles: number;
+  receiveOnlyChangedSymlinks: number;
+  receiveOnlyTotalItems: number;
+  sequence: number;
+  state: string;
+  stateChanged: string;
+  version: number;
+  watchError: string;
+}

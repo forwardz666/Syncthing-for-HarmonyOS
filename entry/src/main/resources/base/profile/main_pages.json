@@ -1,0 +1,14 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/MainPage",
+    "pages/FirstStartPage",
+    "pages/SyncConditionsPage",
+    "pages/DeviceDetailPage",
+    "pages/FolderDetailPage",
+    "pages/SettingsPage",
+    "pages/WebGuiPage",
+    "pages/RecentChangesPage",
+    "pages/LogPage"
+  ]
+}

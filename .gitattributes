@@ -1,0 +1,19 @@
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.ets text eol=lf
+*.ts text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.json5 text eol=lf
+*.md text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+*.ps1 text eol=crlf
+
+*.a binary
+*.so binary
+*.hap binary
+*.dmp binary
+entry/src/main/resources/rawfile/syncthing_core binary
