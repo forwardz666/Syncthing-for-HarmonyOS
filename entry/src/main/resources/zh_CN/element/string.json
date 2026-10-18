@@ -1546,7 +1546,7 @@
     },
     {
       "name": "notification_deleted_text",
-      "value": "你已移除后台同步通知，Syncthing 不再保持后台运行。如需继续，请打开应用重新开启后台同步。"
+      "value": "你已移除后台同步通知，Syncthing 已停止后台运行。重新打开应用即可恢复。"
     },
     {
       "name": "notification_deleted_title",

@@ -1546,7 +1546,7 @@
     },
     {
       "name": "notification_deleted_text",
-      "value": "You removed the background sync notification, so Syncthing no longer runs in the background. Open the app and re-enable Background Sync to continue."
+      "value": "You removed the background sync notification, so Syncthing stopped running in the background. Reopen the app to resume."
     },
     {
       "name": "notification_deleted_title",

@@ -52,6 +52,9 @@ export class Constants {
   // A2 (2026-08-18): persisted FOLDER-picker grant (public-directory sync).
   static readonly PREF_WORK_FOLDER_URI: string = 'work_folder_uri';
   static readonly PREF_WORK_FOLDER_PATH: string = 'work_folder_path';
+  static readonly PREF_PUBLIC_ROOT_MODE: string = 'public_root_mode';
+  static readonly PUBLIC_ROOT_MODE_DOWNLOAD: string = 'download';
+  static readonly PUBLIC_ROOT_MODE_PICKER: string = 'picker';
   // A2 (2026-08-18): unified sync folder in Download dir (user_grant permission).
   static readonly PREF_HAS_REQUESTED_DOWNLOAD_PERM: string = 'has_requested_download_perm';
   static readonly UNIFIED_SYNC_SUBDIR: string = 'Syncthing';

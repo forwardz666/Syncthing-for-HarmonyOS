@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added phone public-directory sync through `DocumentPickerMode.DOWNLOAD`: the persistent `Download/<package>/` root hosts each folder at `Download/<package>/<folderId>`, with no `READ_WRITE_DOWNLOAD_DIRECTORY` and no repeated folder authorization. Tablet/PC/2-in-1 keep `Download/Syncthing/<folderId>`.
+
+### Fixed
+
+- Fixed background sync on phones and tablets by selecting `dataTransfer` on non-PC/2-in-1 devices and publishing Live View progress updates; `taskKeeping` is now only requested on PC/2-in-1.
+- Fixed the Background Sync switch reverting after leaving the page: a failed task request now surfaces the error instead of silently clearing the setting, and a system cancellation no longer rewrites the user's saved preference.
+- Fixed continuous-task detection to recognize the configured background mode, including `taskKeeping`, so an existing task is adopted after a process restart.
+- Replaced the removed `AxisEvent.hasAxis`/`AxisType` wheel checks with `getVerticalAxisValue()` so the project builds with the HarmonyOS 6.0.1 (API 21) SDK while still targeting API 20.
+- Removed the duplicate start/end notification on phone/tablet `dataTransfer` tasks and added the missing `notification_start_*`/`notification_end_*` localization keys.
+- Silenced Live View progress updates by keeping the progress value below 100 and stopping the periodic `updateBackgroundRunning` calls that re-posted the system notification.
+
 ## 2.0.1 - 2026-08-21
 
 ### Added

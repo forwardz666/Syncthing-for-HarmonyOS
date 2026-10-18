@@ -1,4 +1,5 @@
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
+import { deviceInfo } from '@kit.BasicServicesKit';
 import { Logger } from '../common/Logger';
 import { PreferencesManager } from '../data/PreferencesManager';
 import { Constants } from './Constants';
@@ -6,20 +7,12 @@ import { Constants } from './Constants';
 const TAG = 'FolderPermission';
 
 /**
- * Runtime (user_grant) permission handling for the public directory the
- * unified sync container lives in.
+ * Runtime (user_grant) permission handling for the public Download/Documents
+ * directories used by Tablet / PC / 2-in-1 devices.
  *
- * On FolderObtain devices (Tablet/PC/2in1, API26+) the app syncs into
- * `Environment.getUserDownloadDir()/Syncthing`; that path is only reachable
- * once `ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY` is granted at runtime.
- * Without it the app falls back to the FOLDER picker, whose grant is
- * session-scoped on some images — the MainPage re-auth banner keeps asking on
- * every launch. Requesting the directory permission once (a) grants direct,
- * persistent access to the public Download/Documents dirs, (b) survives app
- * restarts and re-installs, and (c) eliminates the per-launch re-auth flow.
- *
- * The user is prompted at most once automatically (prefs flag); subsequent
- * grants/revokes happen in the system settings and are respected live.
+ * Phones cannot obtain `READ_WRITE_DOWNLOAD_DIRECTORY`; they use the
+ * DocumentPickerMode.DOWNLOAD path instead, so requests are skipped there.
+ * The user is prompted at most once automatically (prefs flag).
  */
 export class FolderPermission {
   /** Order matters: Download first (it is the sync container). */
@@ -49,6 +42,11 @@ export class FolderPermission {
     return true;
   }
 
+  static isSupportedOnThisDevice(): boolean {
+    return deviceInfo.deviceType !== 'phone' &&
+      canIUse('SystemCapability.FileManagement.File.Environment.FolderObtain');
+  }
+
   /**
    * Ask the user for the public-dir permissions. Idempotent per lifecycle:
    * already-granted permissions are skipped by the system silently. On
@@ -57,6 +55,11 @@ export class FolderPermission {
    * of permissions granted.
    */
   static async requestDirPermissions(context: common.UIAbilityContext): Promise<number> {
+    if (!FolderPermission.isSupportedOnThisDevice()) {
+      await PreferencesManager.getInstance().putBoolean(Constants.PREF_HAS_REQUESTED_DOWNLOAD_PERM, true);
+      Logger.i(TAG, 'public-dir permissions skipped on this device');
+      return 0;
+    }
     try {
       const atManager = abilityAccessCtrl.createAtManager();
       const result = await atManager.requestPermissionsFromUser(context, FolderPermission.DIR_PERMISSIONS);

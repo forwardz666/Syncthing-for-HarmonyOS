@@ -81,8 +81,7 @@
         "exported": true,
         "backgroundModes": [
           "taskKeeping",
-          "dataTransfer",
-          "multiDeviceConnection"
+          "dataTransfer"
         ],
         "skills": [
           {

@@ -17,6 +17,7 @@ const TAG = 'SyncConditionsPage';
 struct SyncConditionsPage {
   @State isLoading: boolean = true;
   @State statusText: string = '';
+  @State statusIsError: boolean = false;
   @State alwaysRunInBackground: boolean = false;
   @State runOnWifi: boolean = true;
   @State runOnMeteredWifi: boolean = true;
@@ -140,7 +141,7 @@ struct SyncConditionsPage {
             ListItem() {
               Text(this.statusText)
                 .fontSize(13)
-                .fontColor($r('app.color.success'))
+                .fontColor(this.statusIsError ? $r('app.color.danger_alt') : $r('app.color.success'))
                 .width('100%')
                 .padding(12)
                 .borderRadius(8)
@@ -388,9 +389,11 @@ struct SyncConditionsPage {
       this.syncDurationMinutesText = conditions.syncDurationMinutes.toString();
       this.sleepIntervalMinutesText = conditions.sleepIntervalMinutes.toString();
       this.statusText = '';
+      this.statusIsError = false;
     } catch (err) {
       Logger.e(TAG, `Failed to load sync conditions: ${JSON.stringify(err)}`);
       this.statusText = L10n.t('app.string.conditions_load_failed');
+      this.statusIsError = true;
     } finally {
       this.isLoading = false;
     }
@@ -404,6 +407,7 @@ struct SyncConditionsPage {
   private async setBackgroundSync(value: boolean): Promise<void> {
     const previous = this.alwaysRunInBackground;
     this.alwaysRunInBackground = value;
+    this.statusIsError = false;
     this.statusText = value ? L10n.t('app.string.starting_background_sync') : L10n.t('app.string.stopping_background_sync');
 
     try {
@@ -434,7 +438,10 @@ struct SyncConditionsPage {
       this.alwaysRunInBackground = previous;
       await this.preferencesManager.putBoolean(Constants.PREF_START_SERVICE_ON_BOOT, previous);
       Logger.e(TAG, `Failed to change background sync: ${JSON.stringify(err)}`);
-      this.statusText = L10n.fmt('app.string.background_sync_failed', JSON.stringify(err));
+      const message = L10n.fmt('app.string.background_sync_failed', JSON.stringify(err));
+      this.statusText = message;
+      this.statusIsError = true;
+      this.showToast(message);
     }
   }
 
@@ -449,6 +456,7 @@ struct SyncConditionsPage {
   }
 
   private showSaved(): void {
+    this.statusIsError = false;
     this.statusText = L10n.t('app.string.sync_condition_saved');
     this.showToast(L10n.t('app.string.saved'));
   }

@@ -117,7 +117,7 @@ struct MainPage {
           }
         })
         .onAxisEvent((event: AxisEvent) => {
-          if (event.hasAxis(AxisType.VERTICAL_AXIS) && event.getVerticalAxisValue() !== 0) {
+          if (event.getVerticalAxisValue() !== 0) {
             // The per-tab handlers decide whether to consume the wheel event;
             // Tabs itself must not perform any wheel-based switching.
           }
@@ -296,11 +296,11 @@ struct MainPage {
     }
     this.reauthInProgress = true;
     try {
-      // On FolderObtain devices the public folders live under the Download
-      // env root; granting READ_WRITE_DOWNLOAD/DOCUMENTS_DIRECTORY once makes
-      // them readable again — no picker, no per-launch re-auth. Try that first.
       const context = ServiceLocator.get<common.UIAbilityContext>(SERVICE_NAMES.UI_ABILITY_CONTEXT);
-      if (!PublicFolderGrant.isEnvironmentRootAvailable() && context !== undefined) {
+      if (context === undefined) {
+        return;
+      }
+      if (!PublicFolderGrant.isEnvironmentRootAvailable()) {
         await FolderPermission.requestDirPermissions(context);
         if (PublicFolderGrant.isEnvironmentRootAvailable()) {
           await this.checkDeadPublicFolders(api);
@@ -311,20 +311,15 @@ struct MainPage {
           return;
         }
       }
-      const choice = await PublicFolderGrant.chooseFolder();
-      if (choice.path.length === 0) {
-        // cancelled / unsupported
+      const root = await PublicFolderGrant.ensureUnifiedRoot(api, context);
+      if (root.length === 0) {
         return;
       }
-      // Best-effort persist + install the picked dir as the fallback container
-      // root (phone-class devices; no-op on the Environment path).
-      await PublicFolderGrant.setPickerFallback(choice.uri, choice.path);
-      const recovered = await PublicFolderGrant.restoreFolders(api, this.deadPublicFolders, choice.path);
+      const recovered = await PublicFolderGrant.restoreFolders(api, this.deadPublicFolders, root);
       Logger.i(TAG, `reauth: recovered ${recovered}/${this.deadPublicFolders.length}`);
       if (recovered > 0) {
         this.showToast(L10n.fmt('app.string.recovered_n_folders', recovered));
       }
-      // refresh visibility
       await this.checkDeadPublicFolders(api);
     } catch (err) {
       Logger.w(TAG, `reauthPublicFolders failed: ${JSON.stringify(err)}`);

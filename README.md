@@ -11,8 +11,8 @@
 - **内嵌原版 Syncthing 核心** —— 协议、发现、TLS 身份、BEP、索引、块交换、冲突处理与全部同步语义均由上游 Go 核心负责，ArkTS 只做 UI 与平台集成。
 - **Harmony NAPI 桥接** —— 通过 `libsyncthing_napi.so` → `libsyncthing_core_bridge.so` 在 <u>同一应用进程内</u>调用 Go 核心导出函数 `Start(homeDir, logFile, guiAddress, apiKey)`，核心监听 `127.0.0.1:8384`。
 - **设备与文件夹管理** —— 添加/编辑/删除设备，二维码配对（ScanKit，syscap 守卫），动态地址、Introducer、自动接受、压缩、暂停、不可信、共享文件夹；文件夹类型、变更监听、忽略权限、拉取顺序、版本化、重扫、逐文件夹状态。
-- **公共目录同步** —— 申请 `READ_WRITE_DOWNLOAD_DIRECTORY` 用户授权后，可直接同步 `Download/Syncthing/<folderId>` 公共目录（统一容器），文件对用户可见。
-- **后台保活（相对原版的重点增强）** —— `dataTransfer` + `multiDeviceConnection` 后台模式连续作业 + 常驻进度通知 + 定时探测兜底。
+- **公共目录同步** —— 平板/PC/2in1 同步 `Download/Syncthing/<folderId>`；手机通过 `DocumentPickerMode.DOWNLOAD` 同步 `Download/<包名>/<folderId>`，文件对用户可见且无需反复授权。
+- **后台保活（相对原版的重点增强）** —— 手机/平板使用 `dataTransfer` + 实况窗进度通知，PC/2in1 使用 `taskKeeping`，按设备类型自动选择 + 定时探测兜底。
 
 ## 版本更新
 
@@ -29,25 +29,23 @@
 
 ## 设备支持与平台限制
 
-**本项目当前针对平板（Tablet）与 PC/2in1 设备开发与验证（均 arm64）。** 手机的公共目录同步受鸿蒙平台能力门槛限制，目前不能开箱即用。详见下表：
+公共目录同步会按设备类型选择不同的公共路径：
 
-| 能力 | 平板 / PC / 2in1（API 26+） | 手机（如 API 24） |
+| 能力 | 平板 / PC / 2in1 | 手机 |
 |---|---|---|
 | App 沙箱内同步（`/data/storage/el2/base/files/<id>`） | ✅ 已实现 | ✅ 已实现 |
-| 下载/文档公共目录同步（`Download/Syncthing/<id>`） | ✅ 已实现（无需选夹） | ❌ 平台不支持，需 API 26.0.0+ 的 HarmonyOS |
-| 设备/文件夹管理、二维码、Web GUI、日志、后台同步 | ✅ 已实现 | ✅ 已实现（公共目录除外） |
+| 下载公共目录同步 | ✅ `Download/Syncthing/<id>`（PC/2in1 API 13+，Tablet API 26+） | ✅ `Download/<包名>/<id>`（DOWNLOAD 模式，Phone 12+） |
+| 设备/文件夹管理、二维码、Web GUI、日志、后台同步 | ✅ 已实现 | ✅ 已实现 |
 
-**为什么手机公共目录受限，其根本原因是鸿蒙平台能力而非本应用缺陷：**
+**为什么路径不同：**
 
-1. **直接获取下载目录的能力缺失。** 应用通过 `Environment.getUserDownloadDir()`（依赖系统能力 `SystemCapability.FileManagement.File.Environment.FolderObtain`）直连公共 `Download` 目录。据鸿蒙官方文档，该能力**仅对 2in1 / Tablet / API 26+ 设备开放**；在手机等其它设备上调用会返回错误码 `801`。实测 `canIUse` 在手机上为 `false`。
-2. **文件夹选择的兜底同样受限。** 对不支持 `FolderObtain` 的手机，本应用会回退为弹出系统文件夹选择器，但鸿蒙的目录选择能力（`SystemCapability.FileManagement.UserFileService.FolderSelection`，`DocumentViewPicker` 选文件夹）**自 API 26.0.0 起才支持手机**。实测手机（API 24）该能力也不可用。
-3. **动态授权结果。** 手机上 `READ_WRITE_DOWNLOAD_DIRECTORY` 的动态授权返回 `granted=false`，无法获得下载目录的写权限。
-
-结论：**手机要支持公共目录同步，需 API 26.0.0+ 的 HarmonyOS 系统**。当前版本在手机上可正常使用 App 沙箱同步，公共目录同步与图库目录树同步暂不可用；如需在手机上同步公共目录，请使用平板/PC/2in1，或等待 API 26+ 设备。
+1. `Environment.getUserDownloadDir()` 和 `READ_WRITE_DOWNLOAD_DIRECTORY` 只对 **PC/2in1** 与 **Tablet（API 26+）** 开放；手机调用返回 `801`，动态授权也会失败。
+2. 手机改用系统 **`DocumentPickerMode.DOWNLOAD`**：自动创建 `Download/<包名>/`，返回的 URI 自带持久化权限，不需要 `READ_WRITE_DOWNLOAD_DIRECTORY`，也不需要反复授权。每个 Syncthing 文件夹固定为 `Download/<包名>/<folderId>/`。
+3. `DocumentSelectMode.FOLDER` 文件夹选择器是额外的兼容回退：手机从 **API 26.0.0** 才支持，API 24 及以下不可用。
 
 ### 其它平台限制
 
-- **图库目录树**（如 `Gallery/Photos/2026/Trip`）与任意系统目录选择：鸿蒙公共媒体 API 只暴露 albums/assets，而非真实嵌套目录树，且通用文件夹选择器在真机上可能返回空 URI/失败。因此**无法**以系统图库目录作为同步根目录。
+- **图库目录树**（如 `Gallery/Photos/2026/Trip`）：鸿蒙公共媒体 API 只暴露 albums/assets 与相册虚拟路径，不是真实嵌套 POSIX 目录树。因此**无法**以系统图库目录作为 Syncthing 同步根目录。
 - 被评估并**否决**的替代方案：用 URI 抽象重写 Syncthing 文件系统后端（改造过于侵入核心）、沙箱镜像导入/导出（重复存储且无法满足目录树需求）、图库/媒体库投影（API 模型不匹配）。
 
 ## 参考与致谢
@@ -87,15 +85,17 @@
 
 ### 公共目录同步
 
-- 修复了“公共目录不可行”的根因：此前把 `READ_WRITE_DOCUMENTS_DIRECTORY` 误当 `system_grant`，从未真正向用户申请（故始终无权限）。
-- 申请 `ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY`（user_grant 对话框）→ 用 `Environment.getUserDownloadDir()` 定位下载目录 → 以 **统一容器** `Download/Syncthing/<folderId>` 承载所有同步文件夹，授权跨重启持久、无需每次重新选夹。
-- 对不支持 `FolderObtain` 的手机，回退为系统文件夹选择器选取公共目录（详见 [设备支持与平台限制](#设备支持与平台限制)）。
+- 平板/PC/2in1：申请 `ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY`（user_grant 对话框）→ 用 `Environment.getUserDownloadDir()` 定位下载目录 → 统一容器 `Download/Syncthing/<folderId>`。
+- 手机：使用 `DocumentPickerMode.DOWNLOAD` 获取 `Download/<包名>/` 的持久目录 → 每个文件夹固定为 `Download/<包名>/<folderId>`；不依赖 `READ_WRITE_DOWNLOAD_DIRECTORY`，无需反复授权。
+- `DocumentSelectMode.FOLDER` 文件夹选择器保留为兼容回退（手机需 API 26.0.0+）。
 - 新文件夹默认启用 `ignorePerms`，规避鸿蒙下载目录文件系统的权限差异导致同步失败。
 - 复用了基线中的沙箱同步路径，因场景差异所作的小修正（页面加载空值守卫）已并入。
 
 ### 后台保活
 
-- **常驻进度通知**：以约 10 秒间隔用**真实**同步指标（来自 REST 连接状态）更新系统常驻通知，避免应用被系统判定闲置而回收；并区分“用户主动删除通知”与“系统取消”两种情形（用户删除不自动重启，形成“删除即停止 → 手动重开”闭环）。
+- **设备自适应长时任务**：手机/平板申请 `dataTransfer`，并以约 10 秒间隔用**真实**同步指标（来自 REST 连接状态）更新系统实况窗进度通知，避免因 10 分钟无进度被系统取消；PC/2in1 申请 `taskKeeping`，保持静默长时任务。
+- **单条通知、不重复响铃**：手机/平板上只保留一条系统实况窗通知；进度更新不会反复响铃，也不再额外发一条“后台同步已开始”通知。
+- **删除通知后的行为**：用户主动删除后台同步通知时，本次后台任务停止，但“后台同步”设置保持开启；重新打开应用会自动恢复。
 - **定时探测兜底**：注册系统定时作业（`WorkSchedulerExtensionAbility`）周期唤醒，探测核心是否存活并进行 REST 探活拉起。
 - 修复了长时间后无更新导致的被杀问题，实测 4 小时无周期被杀。
 - 严格走官方合规路线，明确排除任何伪造数据的规避手段（如模拟定位、伪下载、画中画等）。
@@ -110,7 +110,7 @@
 ### 权限与工程适配
 
 - 声明权限：`INTERNET`、`GET_NETWORK_INFO`、`KEEP_BACKGROUND_RUNNING`、`CAMERA`、`READ_WRITE_DOCUMENTS_DIRECTORY`、`READ_WRITE_DOWNLOAD_DIRECTORY`、`FILE_ACCESS_PERSIST`。
-- `backgroundModes: ["dataTransfer", "multiDeviceConnection"]`。
+- `backgroundModes: ["taskKeeping", "dataTransfer"]`；运行时按设备类型选择其一。
 - App 源码全部使用现代 `@kit.*` 导入，无残留 `@ohos.*`；可选能力（后台任务、扫码、文件夹选择）运行时以 syscap 守卫，缺失时安全降级。
 - C 桥接层线程模型规避 `napi_env` 跨线程访问，共享错误状态以互斥锁保护。
 
@@ -151,7 +151,9 @@ ArkTS 负责 UI、生命周期、应用偏好、后台任务、通知、沙箱/�
 支持两种同步存储模式：
 
 1. **App 沙箱**：`/data/storage/el2/base/files/<folder-id>` —— 任意设备均可用，但文件对系统图库不可见。
-2. **下载公共目录（统一容器）**：`Download/Syncthing/<folderId>` —— 申请 `READ_WRITE_DOWNLOAD_DIRECTORY` 后直连，文件对用户可见；仅平板/PC/2in1/API 26+ 可用（见 [设备支持与平台限制](#设备支持与平台限制)）。
+2. **下载公共目录**：文件对用户可见。
+   - 平板/PC/2in1：`Download/Syncthing/<folderId>`（`READ_WRITE_DOWNLOAD_DIRECTORY` + `getUserDownloadDir()`）。
+   - 手机：`Download/<包名>/<folderId>`（`DocumentPickerMode.DOWNLOAD`，持久授权，无需反复授权）。
 
 ## 构建与运行
 

@@ -128,11 +128,8 @@ export struct StatusPage {
   }
 
   private handleWheel(event: AxisEvent): void {
-    if (!event.hasAxis(AxisType.VERTICAL_AXIS)) {
-      return;
-    }
     const delta = event.getVerticalAxisValue();
-    if (delta === undefined || delta === 0) {
+    if (delta === 0) {
       return;
     }
     if (!this.isScrollAtTop()) {

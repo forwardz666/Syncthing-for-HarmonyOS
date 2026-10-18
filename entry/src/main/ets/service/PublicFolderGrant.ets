@@ -1,5 +1,6 @@
 import { fileIo, picker, fileUri, fileShare, Environment } from '@kit.CoreFileKit';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { common } from '@kit.AbilityKit';
 import { Logger } from '../common/Logger';
 import { RestApi } from '../network/RestApi';
 import { Folder } from '../model/Index';
@@ -19,33 +20,21 @@ export interface FolderChoice {
 }
 
 /**
- * Public-directory sync helper (A2, 2026-08-18).
+ * Public-directory sync helper.
  *
- * Device classes:
- * - Tablet / PC/2in1 / API26+ (`FolderObtain` syscap present):
- *   the unified container lives at `<Download>/Syncthing` and is reached via
- *   `Environment.getUserDownloadDir()` (user_grant READ_WRITE_DOWNLOAD_DIRECTORY,
- *   persistent). No picker needed.
- * - Phone-class devices (e.g. HarmonyOS NEXT phones, API24): the
- *   `FileManagement.File.Environment.FolderObtain` syscap is NOT available
- *   (official docs: `Environment.getUserDownloadDir()` on non-2in1/Tablet
- *   returns error 801 since API26). The only supported way to reach the public
- *   Download dir there is the FOLDER-picker. We fall back to it once: the user
- *   selects the Download (or any) directory, and we keep the SAME container
- *   model `<picked>/Syncthing/<folderId>`.
- * - `fileShare.persistPermission` is attempted for the picked URI (best
- *   effort): on the OpenHarmony generic image it is rejected (13900001,
- *   session-only) and the MainPage dead-folder banner offers a single-tap
- *   re-grant; on commercial HarmonyOS NEXT it may succeed and make re-picking
- *   unnecessary. `fallbackRoot` is re-established from preferences on launch.
+ * Tablet / PC / 2-in-1 devices use `<Download>/Syncthing` through
+ * `Environment.getUserDownloadDir()`. Phones use the system DOWNLOAD mode,
+ * which creates `<Download>/<package>` with a persistent grant; every
+ * Syncthing folder then lives at `<base>/<folderId>`. The FOLDER picker is
+ * kept as a fallback when DOWNLOAD mode is unavailable.
  */
 export class PublicFolderGrant {
   private static readonly SANDBOX_PREFIX: string = '/data/storage/';
 
   /**
-   * Unified container root on devices without FolderObtain (phone-class).
-   * Process-lifetime cache; re-established from Preferences on launch when the
-   * persisted grant still holds (see restoreFallbackFromPrefs).
+   * Process-lifetime public root used when `FolderObtain` is unavailable:
+   * either the DOWNLOAD-mode base `<Download>/<package>` or a picked
+   * `<picked>/Syncthing`. Re-established from Preferences on launch.
    */
   private static fallbackRoot: string = '';
 
@@ -103,13 +92,13 @@ export class PublicFolderGrant {
    * Select a public directory via the FOLDER picker; returns its real POSIX
    * path plus the uri ('' '' when cancelled / unsupported).
    */
-  static async chooseFolder(): Promise<FolderChoice> {
+  static async chooseFolder(context: common.UIAbilityContext): Promise<FolderChoice> {
     try {
       if (!canIUse('SystemCapability.FileManagement.UserFileService.FolderSelection')) {
         Logger.w(TAG, 'FolderSelection syscap unavailable');
         return { uri: '', path: '' };
       }
-      const docPicker = new picker.DocumentViewPicker();
+      const docPicker = new picker.DocumentViewPicker(context);
       const opts = new picker.DocumentSelectOptions();
       opts.selectMode = picker.DocumentSelectMode.FOLDER;
       const uris: string[] = await docPicker.select(opts);
@@ -123,6 +112,37 @@ export class PublicFolderGrant {
     } catch (err) {
       Logger.w(TAG, `chooseFolder failed: ${JSON.stringify(err)}`);
       return { uri: '', path: '' };
+    }
+  }
+
+  /**
+   * Obtains `<Download>/<package>` with a persistent grant through the system
+   * DOWNLOAD mode. No permission dialog and no folder picker are involved.
+   */
+  static async ensureDownloadModeRoot(context: common.UIAbilityContext): Promise<string> {
+    try {
+      const opts = new picker.DocumentSaveOptions();
+      opts.pickerMode = picker.DocumentPickerMode.DOWNLOAD;
+      const docPicker = new picker.DocumentViewPicker(context);
+      const uris: string[] = await docPicker.save(opts);
+      if (uris === undefined || uris === null || uris.length === 0) {
+        return '';
+      }
+      const uri: string = uris[0];
+      const path: string = new fileUri.FileUri(uri).path;
+      if (path.length === 0) {
+        return '';
+      }
+      const preferences: PreferencesManager = PreferencesManager.getInstance();
+      await preferences.putString(Constants.PREF_WORK_FOLDER_URI, uri);
+      await preferences.putString(Constants.PREF_WORK_FOLDER_PATH, path);
+      await preferences.putString(Constants.PREF_PUBLIC_ROOT_MODE, Constants.PUBLIC_ROOT_MODE_DOWNLOAD);
+      PublicFolderGrant.fallbackRoot = path;
+      Logger.i(TAG, `DOWNLOAD-mode root ready: ${path}`);
+      return path;
+    } catch (err) {
+      Logger.w(TAG, `ensureDownloadModeRoot failed: ${JSON.stringify(err)}`);
+      return '';
     }
   }
 
@@ -150,18 +170,26 @@ export class PublicFolderGrant {
   }
 
   /**
-   * Point every dead public folder at a freshly authorized path and rescan.
+   * Re-points every dead public folder at `<root>/<folderId>` and rescans it.
    * Returns the number of folders recovered.
    */
-  static async restoreFolders(api: RestApi, dead: Folder[], newPath: string): Promise<number> {
+  static async restoreFolders(api: RestApi, dead: Folder[], root: string): Promise<number> {
     let recovered = 0;
     for (let i = 0; i < dead.length; i++) {
       const folder = dead[i];
-      folder.path = newPath;
+      const folderPath = `${root}/${PublicFolderGrant.sanitizeFolderId(folder.id)}`;
+      try {
+        if (!PublicFolderGrant.isPathAccessible(folderPath)) {
+          fileIo.mkdir(folderPath, true);
+        }
+      } catch (err) {
+        Logger.w(TAG, `restore mkdir failed for ${folderPath}: ${JSON.stringify(err)}`);
+      }
+      folder.path = folderPath;
       const put = await api.putFolder(folder.id, folder);
       if (put.success) {
         await api.scanFolder(folder.id).catch(() => undefined);
-        Logger.i(TAG, `restored folder ${folder.id} -> ${newPath}`);
+        Logger.i(TAG, `restored folder ${folder.id} -> ${folderPath}`);
         recovered++;
       } else {
         Logger.w(TAG, `restore folder ${folder.id} failed: ${put.statusCode} ${JSON.stringify(put.error)}`);
@@ -170,12 +198,16 @@ export class PublicFolderGrant {
     return recovered;
   }
 
+  private static sanitizeFolderId(folderId: string): string {
+    const safe = folderId.replace(/[^A-Za-z0-9._-]/g, '_');
+    return safe.length > 0 ? safe : 'folder';
+  }
+
   /**
-   * Unified sync container root. On devices with FolderObtain (Tablet/PC,
-   * API26+) it is `<Download>/Syncthing` via `Environment.getUserDownloadDir()`.
-   * On phone-class devices it is the FOLDER-picker fallback root
-   * `<picked>/Syncthing` ('' until the user picks once).
-   * Returns '' when neither is available.
+   * Unified sync root. Tablet / PC / 2-in-1 use `<Download>/Syncthing` via
+   * `Environment.getUserDownloadDir()`. Phones use the DOWNLOAD-mode base
+   * `<Download>/<package>` (or, as a fallback, `<picked>/Syncthing`).
+   * Returns '' when no root is available.
    */
   static getUnifiedSyncPath(): string {
     const envRoot = PublicFolderGrant.getEnvironmentRoot();
@@ -217,7 +249,7 @@ export class PublicFolderGrant {
     if (root.length === 0) {
       return '';
     }
-    return `${root}/${folderId}`;
+    return `${root}/${PublicFolderGrant.sanitizeFolderId(folderId)}`;
   }
 
   /**
@@ -230,9 +262,8 @@ export class PublicFolderGrant {
   }
 
   /**
-   * Re-establish the picker fallback root from a previously persisted grant
-   * (Preferences). Returns the root ('' when none / no longer accessible).
-   * Only meaningful on devices without FolderObtain.
+   * Re-establishes the persisted public root (DOWNLOAD-mode base or picked
+   * directory). Returns '' when none is stored or it is no longer accessible.
    */
   static async restoreFallbackFromPrefs(): Promise<string> {
     if (PublicFolderGrant.fallbackRoot.length > 0) {
@@ -243,11 +274,15 @@ export class PublicFolderGrant {
     }
     try {
       const prefs = PreferencesManager.getInstance();
-      const pickedPath = await prefs.getString(Constants.PREF_WORK_FOLDER_PATH);
-      if (pickedPath.length === 0) {
+      const storedPath = await prefs.getString(Constants.PREF_WORK_FOLDER_PATH);
+      if (storedPath.length === 0) {
         return '';
       }
-      const root = `${pickedPath}/${Constants.UNIFIED_SYNC_SUBDIR}`;
+      const mode = await prefs.getString(
+        Constants.PREF_PUBLIC_ROOT_MODE, Constants.PUBLIC_ROOT_MODE_PICKER);
+      const root = mode === Constants.PUBLIC_ROOT_MODE_DOWNLOAD
+        ? storedPath
+        : `${storedPath}/${Constants.UNIFIED_SYNC_SUBDIR}`;
       if (!PublicFolderGrant.isPathAccessible(root)) {
         Logger.w(TAG, `stored fallback root not accessible: ${root}`);
         return '';
@@ -272,37 +307,45 @@ export class PublicFolderGrant {
       return;
     }
     await PublicFolderGrant.persistGrant(uri, pickedPath);
+    await PreferencesManager.getInstance().putString(
+      Constants.PREF_PUBLIC_ROOT_MODE, Constants.PUBLIC_ROOT_MODE_PICKER);
     PublicFolderGrant.fallbackRoot = `${pickedPath}/${Constants.UNIFIED_SYNC_SUBDIR}`;
     Logger.i(TAG, `picker fallback set: root=${PublicFolderGrant.fallbackRoot}`);
   }
 
   /**
-   * Ensure the unified container exists and is registered-ready. Resolution
-   * order:
-   *   1) Environment (Download) root — tablet/PC/API26+ (no picker).
-   *   2) Previously persisted picker grant — reused when still accessible.
-   *   3) FOLDER-picker — phone-class devices; user picks a public directory
-   *      once, then the same container model `<picked>/Syncthing/<folderId>`
-   *      applies.
-   * Keeps the container as a PLAIN directory (NOT a syncthing folder) and
-   * removes the legacy root-folder registration (sync-public-download) so
-   * per-subfolder sync folders don't nest inside it.
-   * Returns the root path ('' on failure / user cancelled).
+   * Ensures a public sync root exists. Resolution order:
+   *   1) `<Download>/Syncthing` on FolderObtain devices.
+   *   2) A persisted DOWNLOAD-mode base or FOLDER-picker root.
+   *   3) `DocumentPickerMode.DOWNLOAD` -> `<Download>/<package>`.
+   *   4) FOLDER picker -> `<picked>/Syncthing` (API 26+ phones).
+   * The root is a plain directory, not a Syncthing folder.
    */
-  static async ensureUnifiedRoot(api: RestApi): Promise<string> {
-    // 1) Environment (Download) — no picker needed.
+  static async ensureUnifiedRoot(api: RestApi, context?: common.UIAbilityContext): Promise<string> {
     if (PublicFolderGrant.isEnvironmentRootAvailable()) {
       const envPath = PublicFolderGrant.getUnifiedSyncPath();
       PublicFolderGrant.fallbackRoot = envPath;
       return await PublicFolderGrant.prepareRoot(api, envPath);
     }
-    // 2) Previously persisted picker grant (commercial HarmonyOS).
     const restored = await PublicFolderGrant.restoreFallbackFromPrefs();
     if (restored.length > 0) {
-      return await PublicFolderGrant.prepareRoot(api, restored);
+      const prepared = await PublicFolderGrant.prepareRoot(api, restored);
+      if (prepared.length > 0) {
+        return prepared;
+      }
     }
-    // 3) Fresh FOLDER-picker (phone-class devices).
-    const choice = await PublicFolderGrant.chooseFolder();
+    if (context === undefined) {
+      Logger.w(TAG, 'unified root unavailable: no UIAbilityContext');
+      return '';
+    }
+    const downloadRoot = await PublicFolderGrant.ensureDownloadModeRoot(context);
+    if (downloadRoot.length > 0) {
+      const prepared = await PublicFolderGrant.prepareRoot(api, downloadRoot);
+      if (prepared.length > 0) {
+        return prepared;
+      }
+    }
+    const choice = await PublicFolderGrant.chooseFolder(context);
     if (choice.path.length === 0) {
       Logger.w(TAG, 'unified root unavailable: picker cancelled/unsupported');
       return '';
@@ -316,14 +359,17 @@ export class PublicFolderGrant {
    * subfolders stay siblings inside it. Returns the path ('' on failure).
    */
   private static async prepareRoot(api: RestApi, path: string): Promise<string> {
-    try {
-      if (!PublicFolderGrant.isPathAccessible(path)) {
+    if (!PublicFolderGrant.isPathAccessible(path)) {
+      try {
         fileIo.mkdir(path, true);
-        Logger.i(TAG, `mkdir unified container ${path} ok`);
+      } catch (err) {
+        Logger.w(TAG, `mkdir unified container failed: ${JSON.stringify(err)}`);
       }
-    } catch (err) {
-      Logger.w(TAG, `mkdir unified container failed: ${JSON.stringify(err)}`);
-      return '';
+      if (!PublicFolderGrant.isPathAccessible(path)) {
+        Logger.w(TAG, `unified container still inaccessible: ${path}`);
+        return '';
+      }
+      Logger.i(TAG, `mkdir unified container ${path} ok`);
     }
     // Remove the legacy root-folder registration (old "统一同步文件夹" pointed at
     // this same path) so it doesn't conflict with subfolders. The directory stays.

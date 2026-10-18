@@ -77,22 +77,24 @@ HarmonyOS Next cannot reuse the Android `libsyncthingnative.so` directly. This a
 
 ## Storage Architecture
 
-The Go core scans normal filesystem paths under app storage:
+The Go core scans regular POSIX paths. Two storage modes are exposed:
 
 ```text
-/data/storage/el2/base/files/<folder-id>
+/data/storage/el2/base/files/<folder-id>                  app sandbox
+<Download>/Syncthing/<folder-id>                          Tablet / PC / 2-in-1
+<Download>/<package>/<folder-id>                          Phone (DOWNLOAD mode)
 ```
 
-This is the only supported production storage mode after the public-folder experiments. HarmonyOS Next picker and media APIs expose URI/media abstractions, while the embedded Syncthing Go core expects regular filesystem paths. The app therefore does not expose System Folder, Gallery Folder, import/export, or mirror controls.
+The embedded Syncthing Go core expects regular filesystem paths, so URI-only sources such as the system Gallery are not exposed as sync roots. Tablet / PC / 2-in-1 reach the public Download directory through `Environment.getUserDownloadDir()`; phones use `DocumentPickerMode.DOWNLOAD`, which creates `Download/<package>/` with a persistent grant and supports multiple per-folder subdirectories.
 
 ### Current File Sync Limitation
 
 | User intent | Current status | Reason |
 |---|---|---|
 | Sync app-private files between phone and PC | Supported | Syncthing can scan app-sandbox POSIX paths |
-| Sync a public phone folder | Not supported | Generic folder picker did not provide reliable usable directory access on the test phone |
-| Sync a Gallery directory tree | Not supported | Public media APIs expose albums/assets, not true nested directories |
-| Keep only one public copy of files | Not supported | Zero-copy requires either direct POSIX access or a full Syncthing filesystem backend |
+| Sync a public Download folder | Supported | Tablet/PC/2-in-1 use `Download/Syncthing`; phones use `Download/<package>` via DOWNLOAD mode |
+| Sync a Gallery directory tree | Not supported | Public media APIs expose albums/assets and a virtual album path, not a real nested directory tree |
+| Keep only one public copy of Download files | Supported | The public Download path is synced directly, without a sandbox mirror |
 
 ### Evaluated Storage Approaches
 
@@ -106,7 +108,7 @@ The next viable storage direction would need a new platform capability or a dedi
 
 ## Background Sync Architecture
 
-`BackgroundSyncManager` requests a continuous background task using `dataTransfer` and `multiDeviceConnection`. It uses the system-provided continuous-task notification and records diagnostics for enable, disable, heartbeat, task snapshot, cancel, suspend, and active callbacks.
+`BackgroundSyncManager` selects the continuous-task mode by device type: `dataTransfer` on phones/tablets, with a Live View progress notification updated from real REST metrics roughly every 10 seconds, and `taskKeeping` on PC/2-in-1. It uses the system-provided continuous-task notification and records diagnostics for enable, disable, heartbeat, task snapshot, cancel, suspend, and active callbacks.
 
 All background task calls are guarded with `SystemCapability.ResourceSchedule.BackgroundTaskManager.ContinuousTask`. Devices without this syscap keep foreground sync behavior and report a clear unsupported state.
 

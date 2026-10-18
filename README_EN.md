@@ -9,8 +9,8 @@
 - **Embedded original Syncthing core** — protocol, discovery, TLS identity, BEP, indexing, block exchange, conflict handling and all sync semantics are handled by the upstream Go core; ArkTS only does UI and platform integration.
 - **Harmony NAPI bridge** — calls the Go core's exported `Start(homeDir, logFile, guiAddress, apiKey)` <u>inside the same app process</u> via `libsyncthing_napi.so` → `libsyncthing_core_bridge.so`; the core listens on `127.0.0.1:8384`.
 - **Device & folder management** — add/edit/delete devices, QR pairing (ScanKit, syscap-guarded), dynamic addresses, Introducer, auto-accept, compression, pause, untrusted devices, folder sharing; folder type, watch-for-changes, ignore permissions, pull order, versioning, rescan and per-folder status.
-- **Public-directory sync** — after user-granted `READ_WRITE_DOWNLOAD_DIRECTORY`, can sync directly to the public `Download/Syncthing/<folderId>` unified container, making files visible to the user.
-- **Background keep-alive (a key enhancement over upstream)** — `dataTransfer` + `multiDeviceConnection` background continuous task + persistent progress notification + scheduled probe fallback.
+- **Public-directory sync** — Tablet/PC/2-in-1 sync to `Download/Syncthing/<folderId>`; phones use `DocumentPickerMode.DOWNLOAD` and sync to `Download/<package>/<folderId>`, with files visible to the user and no repeated authorization.
+- **Background keep-alive (a key enhancement over upstream)** — `dataTransfer` with a Live View progress notification on phones/tablets, `taskKeeping` on PC/2-in-1, selected automatically by device type, plus a scheduled probe fallback.
 
 ## Release Notes
 
@@ -27,25 +27,23 @@ Compared with v2.0.1, this release includes:
 
 ## Device Support & Platform Limits
 
-**This project is currently developed and validated for Tablet and PC/2-in-1 devices (all arm64).** Public-directory sync on phones is limited by a HarmonyOS platform capability gate and is not available out of the box. See the table below:
+Public-directory sync chooses a device-appropriate public path:
 
-| Capability | Tablet / PC / 2-in-1 (API 26+) | Phone (e.g. API 24) |
+| Capability | Tablet / PC / 2-in-1 | Phone |
 |---|---|---|
 | App-sandbox sync (`/data/storage/el2/base/files/<id>`) | ✅ Implemented | ✅ Implemented |
-| Download/Documents public-directory sync (`Download/Syncthing/<id>`) | ✅ Implemented (no picker) | ❌ Requires API 26.0.0+ HarmonyOS |
-| Device/folder management, QR, Web GUI, logs, background sync | ✅ Implemented | ✅ Implemented (except public dir) |
+| Download public-directory sync | ✅ `Download/Syncthing/<id>` (PC/2-in-1 API 13+, Tablet API 26+) | ✅ `Download/<package>/<id>` (DOWNLOAD mode, Phone 12+) |
+| Device/folder management, QR, Web GUI, logs, background sync | ✅ Implemented | ✅ Implemented |
 
-**Why public-directory sync is restricted on phones — this is a platform capability limitation, not an app defect:**
+**Why the paths differ:**
 
-1. **No direct access to the Download directory.** The app uses `Environment.getUserDownloadDir()` (depends on system capability `SystemCapability.FileManagement.File.Environment.FolderObtain`) to reach the public `Download` directory directly. According to the official docs this capability is **open only to 2in1 / Tablet / API 26+ devices**; on other devices it returns error `801`. `canIUse` verifies `false` on phones.
-2. **The folder-picker fallback is also limited.** For phones without `FolderObtain` the app falls back to the system folder picker, but Harmony's folder-selection capability (`SystemCapability.FileManagement.UserFileService.FolderSelection`, `DocumentViewPicker` picking a folder) has **only supported phones since API 26.0.0**. On an API 24 phone it is unavailable.
-3. **Dynamic authorization result.** On phones `READ_WRITE_DOWNLOAD_DIRECTORY` returns `granted=false`, so the app cannot obtain write access to the Download directory.
-
-Conclusion: **public-directory sync on a phone requires HarmonyOS API 26.0.0+.** On phones this version works normally with app-sandbox sync; public-directory sync and Gallery-directory-tree sync are currently unavailable. To sync a public directory on a phone, use a tablet/PC/2-in-1, or wait for an API 26+ device.
+1. `Environment.getUserDownloadDir()` and `READ_WRITE_DOWNLOAD_DIRECTORY` are available only on **PC/2-in-1** and **Tablet (API 26+)**; phones get `801` and the permission request is denied.
+2. Phones use the system **`DocumentPickerMode.DOWNLOAD`**, which creates `Download/<package>/` and returns a URI with a persistent grant. No `READ_WRITE_DOWNLOAD_DIRECTORY` and no repeated authorization. Each Syncthing folder is fixed at `Download/<package>/<folderId>/`.
+3. `DocumentSelectMode.FOLDER` remains an additional compatibility fallback: phones support it only from **API 26.0.0**; API 24 and older cannot use it.
 
 ### Other Platform Limits
 
-- **Gallery directory tree** (e.g. `Gallery/Photos/2026/Trip`) and arbitrary system-directory selection: Harmony's public media API exposes only albums/assets rather than a real nested directory tree, and the generic folder picker may return an empty URI/fail on real devices. Therefore the system Gallery cannot be used as a sync root.
+- **Gallery directory tree** (e.g. `Gallery/Photos/2026/Trip`): Harmony's public media API exposes albums/assets and an album virtual path, not a real nested POSIX directory tree. The system Gallery therefore cannot be used as a Syncthing sync root.
 - Rejected alternatives: rewriting Syncthing's filesystem backend around a URI abstraction (too invasive for the core), sandbox mirror import/export (duplicates storage and cannot satisfy directory-tree needs), and Gallery/media-library projection (API model mismatch).
 
 ## References & Acknowledgements
@@ -84,15 +82,17 @@ Adopts **c-archive + NAPI bridge** so the Go core starts <u>inside the same proc
 
 ### Public-directory sync
 
-- Fixed the root cause of “public directory is impossible”: previously `READ_WRITE_DOCUMENTS_DIRECTORY` was mistakenly treated as a `system_grant` and was never actually requested from the user (so there was never permission).
-- Request `ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY` (user_grant dialog) → locate the Download dir with `Environment.getUserDownloadDir()` → host all sync folders in the **unified container** `Download/Syncthing/<folderId>`; the grant persists across reboots with no need to re-pick each time.
-- For phones without `FolderObtain`, falls back to the system folder picker to choose a public directory (see [Device Support & Platform Limits](#device-support--platform-limits)).
+- Tablet/PC/2-in-1: request `ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY` (user_grant dialog) → locate Download with `Environment.getUserDownloadDir()` → unified container `Download/Syncthing/<folderId>`.
+- Phone: use `DocumentPickerMode.DOWNLOAD` to obtain the persistent `Download/<package>/` directory → each folder is fixed at `Download/<package>/<folderId>`. No `READ_WRITE_DOWNLOAD_DIRECTORY` and no repeated authorization.
+- `DocumentSelectMode.FOLDER` is kept as a compatibility fallback (phones require API 26.0.0+).
 - New folders default to `ignorePerms` enabled to avoid sync failures from Harmony's Download-directory filesystem permission differences.
 - Reused the baseline sandbox-sync path; small scenario-specific fixes (page-load null-guards) were merged in.
 
 ### Background keep-alive
 
-- **Persistent progress notification:** updates the system persistent notification with **real** sync metrics (from REST connection status) roughly every 10 s so the system does not reclaim the app as idle; distinguishes “user deleted the notification” from “system cancelled it” (a user delete does not auto-restart — forming a “delete-to-stop → re-enable manually” loop).
+- **Device-adaptive continuous task:** phones/tablets request `dataTransfer` and update a system Live View progress notification with **real** sync metrics (from REST connection status) roughly every 10 s, avoiding the 10-minute no-progress cancellation; PC/2-in-1 requests `taskKeeping` for a silent long-running task.
+- **One notification, no repeated sounds:** phones/tablets keep a single system Live View notification; progress updates do not ring repeatedly and no extra “background sync started” notification is published.
+- **Deleting the notification:** removing the background sync notification stops the current task, but the Background Sync setting stays enabled and is restored when the app is reopened.
 - **Scheduled probe fallback:** registers a system scheduled job (`WorkSchedulerExtensionAbility`) that periodically wakes, probes whether the core is alive and does a REST liveness re-launch.
 - Fixed the “killed after a long time without updates” issue; verified to run 4 hours without periodic kills.
 - Strictly follows the official compliant route, explicitly excluding any data-spoofing evasion (spoofed location, fake downloads, picture-in-picture, etc.).
@@ -107,7 +107,7 @@ Adopts **c-archive + NAPI bridge** so the Go core starts <u>inside the same proc
 ### Permissions & engineering adaptation
 
 - Declared permissions: `INTERNET`, `GET_NETWORK_INFO`, `KEEP_BACKGROUND_RUNNING`, `CAMERA`, `READ_WRITE_DOCUMENTS_DIRECTORY`, `READ_WRITE_DOWNLOAD_DIRECTORY`, `FILE_ACCESS_PERSIST`.
-- `backgroundModes: ["dataTransfer", "multiDeviceConnection"]`.
+- `backgroundModes: ["taskKeeping", "dataTransfer"]`; one is selected at runtime by device type.
 - All app source uses modern `@kit.*` imports with no leftover `@ohos.*`; optional capabilities (background tasks, scanning, folder picker) are guarded at runtime by syscap and degrade safely when missing.
 - The C bridge layer's thread model avoids cross-thread `napi_env` access, and shared error state is protected by a mutex.
 
@@ -148,7 +148,9 @@ ArkTS owns the UI, lifecycle, app preferences, background tasks, notifications, 
 Two sync storage modes are supported:
 
 1. **App sandbox**: `/data/storage/el2/base/files/<folder-id>` — available on any device, but files are invisible to the system Gallery.
-2. **Download public directory (unified container)**: `Download/Syncthing/<folderId>` — direct access after granting `READ_WRITE_DOWNLOAD_DIRECTORY`, files visible to the user; only Tablet/PC/2-in-1/API 26+ (see [Device Support & Platform Limits](#device-support--platform-limits)).
+2. **Download public directory**: files are visible to the user.
+   - Tablet/PC/2-in-1: `Download/Syncthing/<folderId>` (`READ_WRITE_DOWNLOAD_DIRECTORY` + `getUserDownloadDir()`).
+   - Phone: `Download/<package>/<folderId>` (`DocumentPickerMode.DOWNLOAD`, persistent grant, no repeated authorization).
 
 ## Build & Run
 

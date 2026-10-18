@@ -1,4 +1,5 @@
 import { Logger } from '../common/Logger';
+import { common } from '@kit.AbilityKit';
 import { ServiceLocator, SERVICE_NAMES } from '../common/ServiceLocator';
 import { RestApi } from '../network/RestApi';
 import { PublicFolderGrant } from '../service/PublicFolderGrant';
@@ -62,7 +63,8 @@ export struct FolderListPage {
 
   private async ensureUnifiedContainer(api: RestApi): Promise<void> {
     try {
-      await PublicFolderGrant.ensureUnifiedRoot(api);
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      await PublicFolderGrant.ensureUnifiedRoot(api, context);
     } catch (err) {
       Logger.w(TAG, `ensureUnifiedContainer failed: ${JSON.stringify(err)}`);
     }
@@ -186,11 +188,8 @@ export struct FolderListPage {
   }
 
   private handleWheel(event: AxisEvent): void {
-    if (!event.hasAxis(AxisType.VERTICAL_AXIS)) {
-      return;
-    }
     const delta = event.getVerticalAxisValue();
-    if (delta === undefined || delta === 0) {
+    if (delta === 0) {
       return;
     }
     if (!this.isScrollAtTop()) {
@@ -312,7 +311,8 @@ export struct FolderListPage {
         this.showToast(L10n.t('app.string.syncthing_not_ready'));
         return;
       }
-      const root = await PublicFolderGrant.ensureUnifiedRoot(api);
+      const root = await PublicFolderGrant.ensureUnifiedRoot(api,
+        this.getUIContext().getHostContext() as common.UIAbilityContext);
       if (root.length === 0) {
         this.showToast(PublicFolderGrant.isEnvironmentRootAvailable()
           ? L10n.t('app.string.grant_download_permission')

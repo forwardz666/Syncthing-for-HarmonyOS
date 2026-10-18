@@ -1,6 +1,7 @@
 import { common, wantAgent, WantAgent } from '@kit.AbilityKit';
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit';
 import { notificationManager } from '@kit.NotificationKit';
+import { deviceInfo } from '@kit.BasicServicesKit';
 import { Logger } from '../common/Logger';
 import { BackgroundDiagnostics } from './BackgroundDiagnostics';
 import { ServiceLocator, SERVICE_NAMES } from '../common/ServiceLocator';
@@ -16,6 +17,13 @@ import { WorkSchedulerManager } from './WorkSchedulerManager';
 const TAG = 'BackgroundSyncManager';
 const BACKGROUND_TASK_SYSCAP = 'SystemCapability.ResourceSchedule.BackgroundTaskManager.ContinuousTask';
 
+function resolveBackgroundModes(): string[] {
+  if (deviceInfo.deviceType === '2in1') {
+    return ['taskKeeping'];
+  }
+  return ['dataTransfer'];
+}
+
 /**
  * Wraps HarmonyOS continuous background tasks for Syncthing's long-running sync.
  *
@@ -24,13 +32,7 @@ const BACKGROUND_TASK_SYSCAP = 'SystemCapability.ResourceSchedule.BackgroundTask
  * background task cancellation can be diagnosed from hilog.
  */
 export class BackgroundSyncManager {
-  // Use taskKeeping: this device is a PC/2in1, where TASK_KEEPING is available
-  // without ACL and does NOT require mandatory Live View progress notifications.
-  // dataTransfer alone was canceled after 10 minutes (detailedReason=12) when no
-  // Live View was published, and multiDeviceConnection was canceled (reason 10)
-  // when the system detected no distributed multi-device business. taskKeeping
-  // keeps a normal silent long-task notification while Syncthing keeps syncing.
-  private readonly bgModes: string[] = ['taskKeeping'];
+  private readonly bgModes: string[] = resolveBackgroundModes();
   private continuousTaskId: number = -1;
   private continuousNotificationId: number = -1;
   private enabled: boolean = false;
@@ -73,9 +75,7 @@ export class BackgroundSyncManager {
       this.startProgressUpdater();
       await this.logSystemTaskSnapshot('enable-already-enabled');
       WorkSchedulerManager.register();
-      // Deliberately do not publish a progress notification here: on this device a
-      // third-party Live View publish is converted to a ringing service-information
-      // notification. The system-created long-task notification is already shown.
+      await this.publishInitialProgress();
       return true;
     }
 
@@ -99,9 +99,7 @@ export class BackgroundSyncManager {
       this.startHeartbeat();
       this.startProgressUpdater();
       WorkSchedulerManager.register();
-      // Deliberately do not publish a progress notification here: on this device a
-      // third-party Live View publish is converted to a ringing service-information
-      // notification. The system-created long-task notification is already shown.
+      await this.publishInitialProgress();
       if (notifyStart) {
         await this.notifySyncStarted();
       }
@@ -133,6 +131,8 @@ export class BackgroundSyncManager {
       BackgroundDiagnostics.record('background.disable.request', `notificationId=${this.continuousNotificationId}, continuousTaskId=${this.continuousTaskId}`);
       if (!canIUse('SystemCapability.ResourceSchedule.BackgroundTaskManager.ContinuousTask')) {
         BackgroundDiagnostics.record('background.disable.unsupported.inline');
+      } else if (!this.enabled && this.continuousTaskId <= 0 && this.continuousNotificationId <= 0) {
+        BackgroundDiagnostics.record('background.disable.noTask');
       } else if (this.continuousTaskId > 0) {
         await backgroundTaskManager.stopBackgroundRunning(uiContext, this.continuousTaskId);
       } else {
@@ -166,9 +166,6 @@ export class BackgroundSyncManager {
 
     const snapshot = await this.logSystemTaskSnapshot(`ensure-${source}`);
     if (this.enabled && this.continuousTaskId > 0 && snapshot.indexOf(`continuousTaskId=${this.continuousTaskId}`) >= 0) {
-      // Heartbeat does not need to call updateBackgroundRunning: the 10s progress
-      // updater already refreshes the continuous task via updateBackgroundRunning.
-      // This avoids any extra notification churn while the task is still present.
       return true;
     }
 
@@ -331,12 +328,10 @@ export class BackgroundSyncManager {
         text = L10n.fmt('app.string.notification_active', Utils.formatBytes(inBytes), Utils.formatBytes(outBytes), connectedCount);
       }
       const progress = await this.computeSyncProgress();
-      // Do NOT publish a Live View progress notification: on this device a third-party
-      // Live View publish is converted to a ringing service-information notification.
-      // updateBackgroundRunning keeps the continuous task fresh; progress is logged
-      // for diagnostics and to prove real data-transfer activity.
-      await this.refreshSystemContinuousTask('progress');
-      BackgroundDiagnostics.record('background.progress.success', `in=${inBytes},out=${outBytes},connected=${connectedCount},paused=${paused},progress=${progress}`);
+      if (this.usesDataTransferMode()) {
+        await this.publishPersistentNotification(title, text, Math.min(progress, 99));
+      }
+      BackgroundDiagnostics.record('background.progress.success', `in=${inBytes},out=${outBytes},connected=${connectedCount},paused=${paused},progress=${progress},notificationId=${this.continuousNotificationId}`);
     } finally {
       this.progressInProgress = false;
     }
@@ -378,7 +373,7 @@ export class BackgroundSyncManager {
   }
 
   private async notifySyncStarted(): Promise<void> {
-    if (this.context === null) {
+    if (this.usesDataTransferMode() || this.context === null) {
       return;
     }
     await NotificationManager.getInstance().showInfoNotification(
@@ -389,13 +384,24 @@ export class BackgroundSyncManager {
   }
 
   private async notifySyncStopped(): Promise<void> {
-    if (this.context === null) {
+    if (this.usesDataTransferMode() || this.context === null) {
       return;
     }
     await NotificationManager.getInstance().showInfoNotification(
       L10n.t('app.string.notification_end_title'),
       L10n.t('app.string.notification_end_text'),
       this.context
+    );
+  }
+
+  private async publishInitialProgress(): Promise<void> {
+    if (!this.usesDataTransferMode()) {
+      return;
+    }
+    await this.publishPersistentNotification(
+      L10n.t('app.string.notification_title'),
+      L10n.t('app.string.notification_idle', '0 B', '0 B'),
+      0
     );
   }
 
@@ -423,30 +429,6 @@ export class BackgroundSyncManager {
       await manager.showPersistentNotification(title, text, this.context, this.continuousNotificationId);
     } else {
       await manager.updatePersistentNotification(title, text);
-    }
-  }
-
-  private async refreshSystemContinuousTask(source: string): Promise<void> {
-    if (!this.isContinuousTaskSupported()) {
-      BackgroundDiagnostics.record('background.update.unsupported', `source=${source}`);
-      return;
-    }
-    try {
-      if (!canIUse('SystemCapability.ResourceSchedule.BackgroundTaskManager.ContinuousTask')) {
-        BackgroundDiagnostics.record('background.update.unsupported.inline', `source=${source}`);
-        return;
-      }
-      const result = await backgroundTaskManager.updateBackgroundRunning(this.requireContext(), this.bgModes);
-      if (result.notificationId > 0) {
-        this.continuousNotificationId = result.notificationId;
-      }
-      if (result.continuousTaskId !== undefined && result.continuousTaskId > 0) {
-        this.continuousTaskId = result.continuousTaskId;
-      }
-      this.enabled = true;
-      BackgroundDiagnostics.record('background.update.success', `source=${source}, notificationId=${this.continuousNotificationId}, continuousTaskId=${this.continuousTaskId}`);
-    } catch (err) {
-      BackgroundDiagnostics.record('background.update.failed', `source=${source}, error=${JSON.stringify(err)}`);
     }
   }
 
@@ -503,11 +485,15 @@ export class BackgroundSyncManager {
 
   private hasManagedMode(modes: string[]): boolean {
     for (let i = 0; i < modes.length; i++) {
-      if (modes[i] === 'dataTransfer' || modes[i] === 'multiDeviceConnection') {
+      if (this.bgModes.indexOf(modes[i]) >= 0) {
         return true;
       }
     }
     return false;
+  }
+
+  private usesDataTransferMode(): boolean {
+    return this.bgModes.indexOf('dataTransfer') >= 0;
   }
 
   private registerContinuousTaskCallbacks(): void {
@@ -617,11 +603,7 @@ export class BackgroundSyncManager {
     this.stopProgressUpdater();
     WorkSchedulerManager.unregister();
     await NotificationManager.getInstance().dismissPersistentNotification();
-    try {
-      await PreferencesManager.getInstance().putBoolean(Constants.PREF_START_SERVICE_ON_BOOT, false);
-    } catch (err) {
-      BackgroundDiagnostics.record('background.callback.cancel.persistFailed', JSON.stringify(err));
-    }
+    BackgroundDiagnostics.record('background.callback.cancel.userRemoved.keepPreference');
     if (this.context !== null) {
       await NotificationManager.getInstance().showInfoNotification(
         L10n.t('app.string.notification_deleted_title'),
